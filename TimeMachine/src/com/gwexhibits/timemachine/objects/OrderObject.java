@@ -1,0 +1,84 @@
+package com.gwexhibits.timemachine.objects;
+
+import android.text.TextUtils;
+
+import com.salesforce.androidsdk.smartsync.manager.SyncManager;
+import com.salesforce.androidsdk.smartsync.model.SalesforceObject;
+import com.salesforce.androidsdk.smartsync.util.Constants;
+
+import org.json.JSONObject;
+
+/**
+ * Created by psyfu on 2/24/2016.
+ */
+public class OrderObject extends SalesforceObject {
+
+    public static final String CONFIGURATION = "Related_Opportunity__r.Configuration__r.";
+
+    public static final String SFID = "Opp_SFID__c";
+    public static final String SHOW_NAME = "Show_Name__c";
+    public static final String CLIENT_NAME = "Account.Name";
+    public static final String SHIPPING_DATE = "GOLDEN_Targeted_Shipping_Date__c";
+    public static final String INSTRUCTIONS = "Special_Instructions__c";
+
+    public static final String CONFIGURATION_NAME = CONFIGURATION + "Name";
+    public static final String CONFIGURATION_TIME_PRE_STAGE = CONFIGURATION + "Estimated_Pre_Stage_Time__c";
+    public static final String CONFIGURATION_TIME_UP = CONFIGURATION + "Estimated_I_D_Time_Up__c";
+    public static final String CONFIGURATION_TIME_DOWN = CONFIGURATION + "Estimated_I_D_Time_Down__c";
+    public static final String CONFIGURATION_TIME_RI = CONFIGURATION + "Estimated_RI_Time__c";
+
+
+    public static final String[] ORDER_FIELDS_SYNC_DOWN = {
+            Constants.ID,
+            SFID,
+            SHOW_NAME,
+            CLIENT_NAME,
+            CONFIGURATION_NAME,
+            CONFIGURATION_TIME_PRE_STAGE,
+            CONFIGURATION_TIME_UP,
+            CONFIGURATION_TIME_DOWN,
+            SHIPPING_DATE,
+            CONFIGURATION_TIME_RI,
+            INSTRUCTIONS,
+            Constants.LAST_MODIFIED_DATE
+    };
+
+    private boolean isLocallyModified;
+
+
+    /**
+     * Parameterized constructor.
+     *
+     * @param object Raw data for object.
+     */
+    public OrderObject(JSONObject object) {
+        super(object);
+
+
+        objectType = "OrderObject";
+        objectId = object.optString(Constants.ID);
+        name = object.optString(SFID) + " " +
+                object.optString(CLIENT_NAME) + " @ " +
+                object.optString(SHOW_NAME);
+
+        isLocallyModified = object.optBoolean(SyncManager.LOCALLY_UPDATED) ||
+                object.optBoolean(SyncManager.LOCALLY_CREATED) ||
+                object.optBoolean(SyncManager.LOCALLY_DELETED);
+    }
+
+    /**
+     * Returns whether the contact has been locally modified or not.
+     *
+     * @return True - if the contact has been locally modified, False - otherwise.
+     */
+    public boolean isLocallyModified() {
+        return isLocallyModified;
+    }
+
+    private String sanitizeText(String text) {
+        if (TextUtils.isEmpty(text) || text.equals(Constants.NULL_STRING)) {
+            return Constants.EMPTY_STRING;
+        }
+        return text;
+    }
+}
