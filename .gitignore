@@ -3,4 +3,8 @@ gradle.
 local.properties
 /.idea
 .DS_Store
+/library/build
+/forcedroid/libs/SalesforceSDK/build
+/forcedroid/libs/SmartStore/build
+/forcedroid/libs/SmartSync/build
 /build
