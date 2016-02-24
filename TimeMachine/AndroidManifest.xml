@@ -1,28 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.gwexhibits.timemachine"
-	android:versionCode="1"
-	android:versionName="1.0"
-	android:installLocation="internalOnly">
+    package="com.gwexhibits.timemachine"
+    android:installLocation="internalOnly"
+    android:versionCode="1"
+    android:versionName="1.0">
 
-	<application android:icon="@drawable/sf__icon"
-	    android:label="@string/app_name"
-		android:name=".TimeMachineApp"
-		android:manageSpaceActivity="com.salesforce.androidsdk.ui.ManageSpaceActivity">
-
-		<!-- Launcher screen -->
-		<activity android:name=".MainActivity"
-		    android:label="@string/app_name"
-			android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-				<category android:name="android.intent.category.LAUNCHER" />
-			</intent-filter>
-		</activity>
-	</application>
-
-    <uses-sdk android:minSdkVersion="19"
+    <uses-sdk
+        android:minSdkVersion="19"
         android:targetSdkVersion="23" />
 
     <!--
@@ -30,8 +14,40 @@
         receive the messages and registration result. This must be of
         the format <app-package-name>.C2D_MESSAGE for it to work.
     -->
-    <permission android:name="com.gwexhibits.timemachine.C2D_MESSAGE"
+    <permission
+        android:name="com.gwexhibits.timemachine.C2D_MESSAGE"
         android:protectionLevel="signature" />
 
     <uses-permission android:name="com.gwexhibits.timemachine.C2D_MESSAGE" />
+
+    <android:uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <android:uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <android:uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <application
+        android:name=".TimeMachineApp"
+        android:icon="@drawable/sf__icon"
+        android:label="@string/app_name"
+        android:manageSpaceActivity="com.salesforce.androidsdk.ui.ManageSpaceActivity">
+
+        <!-- Launcher screen -->
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+
+        </activity>
+        <activity
+            android:name=".SearchActivity"
+            android:theme="@style/AppTheme"
+            android:icon="@drawable/ic_launcher"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
 </manifest>
