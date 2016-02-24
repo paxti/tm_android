@@ -1,0 +1,4 @@
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/Text1"
+    style="@style/SmartStore.Inspector.Cell" />
+<!-- From: file:/Users/bhariharan/Documents/Github_Projects/My_Forks/SalesforceMobileSDK-Android/libs/SmartStore/res/layout/sf__inspector_result_cell.xml -->
