@@ -40,7 +40,7 @@ public class TimeMachineApp extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		SmartSyncSDKManager.initNative(getApplicationContext(), new NativeKeyImpl(), MainActivity.class);
+		SmartSyncSDKManager.initNative(getApplicationContext(), new NativeKeyImpl(), SearchActivity.class);
 
 		/*
 		 * Un-comment the line below to enable push notifications in this app.
