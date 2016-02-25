@@ -28,6 +28,7 @@ package com.gwexhibits.timemachine;
 
 import android.app.Application;
 
+import com.gwexhibits.timemachine.services.PushService;
 import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
 import com.salesforce.androidsdk.app.SalesforceSDKManager.KeyInterface;
 import com.salesforce.androidsdk.security.Encryptor;
@@ -48,7 +49,7 @@ public class TimeMachineApp extends Application {
 		 * Add your Google package ID in 'bootonfig.xml', as the value
 		 * for the key 'androidPushNotificationClientId'.
 		 */
-		// SmartSyncSDKManager.getInstance().setPushNotificationReceiver(pnInterface);
+		SmartSyncSDKManager.getInstance().setPushNotificationReceiver(new PushService());
 	}
 }
 
