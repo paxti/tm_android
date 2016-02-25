@@ -3,7 +3,8 @@ apply plugin: 'android'
 dependencies {
   compile project(':forcedroid:libs:SmartSync')
   compile project(':library')
-  compile "com.android.support:appcompat-v7:22.1.0"
+  compile 'com.android.support:appcompat-v7:22.1.0'
+  compile 'com.jakewharton:butterknife:7.0.1'
 }
 
 android {

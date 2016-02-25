@@ -1,29 +1,36 @@
 package com.gwexhibits.timemachine;
 
+import android.content.Intent;
 import android.content.IntentFilter;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
+import android.widget.Button;
 
+import com.gwexhibits.timemachine.services.OrdersSyncService;
 import com.quinny898.library.persistentsearch.SearchBox;
 import com.salesforce.androidsdk.accounts.UserAccountManager;
 import com.salesforce.androidsdk.app.SalesforceSDKManager;
 import com.salesforce.androidsdk.rest.ClientManager;
 import com.salesforce.androidsdk.rest.RestClient;
 import com.salesforce.androidsdk.security.PasscodeManager;
-import com.salesforce.androidsdk.ui.SalesforceActivity;
+import com.salesforce.androidsdk.smartstore.ui.SmartStoreInspectorActivity;
 import com.salesforce.androidsdk.util.EventsObservable;
 import com.salesforce.androidsdk.util.UserSwitchReceiver;
 
-public class SearchActivity extends AppCompatActivity{
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
+public class SearchActivity extends AppCompatActivity{
 
     private PasscodeManager passcodeManager;
     private UserSwitchReceiver userSwitchReceiver;
 
     private Boolean isSearch;
-    private SearchBox search;
     private RestClient client;
+
+    @Bind(R.id.searchbox) SearchBox search;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +45,8 @@ public class SearchActivity extends AppCompatActivity{
         EventsObservable.get().notifyEvent(EventsObservable.EventType.MainActivityCreateComplete, this);
 
         setContentView(R.layout.activity_search);
-        search = (SearchBox) findViewById(R.id.searchbox);
+        ButterKnife.bind(this);
+
         search.enableVoiceRecognition(this);
         search.setInputType(InputType.TYPE_CLASS_NUMBER);
     }
@@ -134,5 +142,17 @@ public class SearchActivity extends AppCompatActivity{
         protected void onUserSwitch() {
             refreshIfUserSwitched();
         }
+    }
+
+    @OnClick(R.id.button)
+    public void sayHi(Button button) {
+        Intent mServiceIntent = new Intent(this, OrdersSyncService.class);
+        startService(mServiceIntent);
+    }
+
+    @OnClick(R.id.button2)
+    public void button2Clicked(Button button) {
+        final Intent i = new Intent(this, SmartStoreInspectorActivity.class);
+        startActivity(i);
     }
 }

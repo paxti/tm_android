@@ -30,6 +30,8 @@
         android:label="@string/app_name"
         android:manageSpaceActivity="com.salesforce.androidsdk.ui.ManageSpaceActivity">
 
+        <service android:name=".services.OrdersSyncService" android:exported="false"/>
+
         <!-- Launcher screen -->
         <activity
             android:name=".SearchActivity"

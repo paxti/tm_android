@@ -16,4 +16,22 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Get data"
+        android:id="@+id/button"
+        android:layout_below="@+id/searchbox"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="169dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Inspect"
+        android:id="@+id/button2"
+        android:layout_below="@+id/searchbox"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="169dp" />
+
 </RelativeLayout>
