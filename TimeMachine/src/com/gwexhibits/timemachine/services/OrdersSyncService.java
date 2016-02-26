@@ -23,7 +23,7 @@ import org.json.JSONException;
  */
 public class OrdersSyncService extends IntentService {
 
-    private static final Integer LIMIT = 100;
+    private static final Integer LIMIT = 10000;
     private static final String TAG = "OrderSyncService";
 
 
@@ -31,20 +31,6 @@ public class OrdersSyncService extends IntentService {
     private SmartStore smartStore;
     private SyncManager syncMgr;
     private long syncId = -1;
-
-    private static IndexSpec[] ORDERS_INDEX_SPEC = {
-            new IndexSpec("Id", SmartStore.Type.string),
-            new IndexSpec(OrderObject.SFID, SmartStore.Type.string),
-            new IndexSpec(OrderObject.SHOW_NAME, SmartStore.Type.string),
-            new IndexSpec(OrderObject.CLIENT_NAME, SmartStore.Type.string),
-            new IndexSpec(OrderObject.SHIPPING_DATE, SmartStore.Type.string),
-            new IndexSpec(OrderObject.INSTRUCTIONS, SmartStore.Type.string),
-            new IndexSpec(OrderObject.CONFIGURATION_NAME, SmartStore.Type.string),
-            new IndexSpec(OrderObject.CONFIGURATION_TIME_PRE_STAGE, SmartStore.Type.string),
-            new IndexSpec(OrderObject.CONFIGURATION_TIME_UP, SmartStore.Type.string),
-            new IndexSpec(OrderObject.CONFIGURATION_TIME_DOWN, SmartStore.Type.string),
-            new IndexSpec(OrderObject.CONFIGURATION_TIME_RI, SmartStore.Type.string)
-    };
 
     /**
      * Creates an IntentService.  Invoked by your subclass's constructor.
@@ -63,7 +49,7 @@ public class OrdersSyncService extends IntentService {
     }
 
     public synchronized void syncDown() {
-        smartStore.registerSoup("Orders", ORDERS_INDEX_SPEC);
+        smartStore.registerSoup(OrderObject.ORDER_SUPE, OrderObject.ORDERS_INDEX_SPEC);
         final SyncManager.SyncUpdateCallback callback = new SyncManager.SyncUpdateCallback() {
 
             @Override

@@ -2,6 +2,8 @@ package com.gwexhibits.timemachine.objects;
 
 import android.text.TextUtils;
 
+import com.salesforce.androidsdk.smartstore.store.IndexSpec;
+import com.salesforce.androidsdk.smartstore.store.SmartStore;
 import com.salesforce.androidsdk.smartsync.manager.SyncManager;
 import com.salesforce.androidsdk.smartsync.model.SalesforceObject;
 import com.salesforce.androidsdk.smartsync.util.Constants;
@@ -30,30 +32,18 @@ public class OrderObject extends SalesforceObject {
     public static final String CONFIGURATION_TIME_DOWN = CONFIGURATION + "Estimated_I_D_Time_Down__c";
     public static final String CONFIGURATION_TIME_RI = CONFIGURATION + "Estimated_RI_Time__c";
 
-
-    public static final String WORKORDER = "Workorder";
-    public static final String SOS = "SoS";
-    public static final String R_R = "R&R";
-    public static final String CUSTOM_FUB = "Custom Fab Request";
-
-    public static final String ORDER_TYPE = "Order_Type__c ";
-    public static final String ORDER_SUBMITTED_STATUS = "Order_Submitted__c";
-    public static final String ORDER_STATUS = "Status";
-
-    public static final String ORDER_STATUS_DRATF = "Draft";
-    public static final String ORDER_STATUS_COMPLITED = "Completed";
-
-
-    public  static final String[] STATUS_NOT_TO_SYNC = {
-            ORDER_STATUS_DRATF,
-            ORDER_STATUS_COMPLITED
-    };
-
-    public static final String[] LIST_OF_ORDERS_TO_SYNC = {
-            WORKORDER,
-            SOS,
-            R_R,
-            CUSTOM_FUB
+    public static IndexSpec[] ORDERS_INDEX_SPEC = {
+            new IndexSpec("Id", SmartStore.Type.string),
+            new IndexSpec(SFID, SmartStore.Type.string),
+            new IndexSpec(SHOW_NAME, SmartStore.Type.string),
+            new IndexSpec(CLIENT_NAME, SmartStore.Type.string),
+            new IndexSpec(SHIPPING_DATE, SmartStore.Type.string),
+            new IndexSpec(INSTRUCTIONS, SmartStore.Type.string),
+            new IndexSpec(CONFIGURATION_NAME, SmartStore.Type.string),
+            new IndexSpec(CONFIGURATION_TIME_PRE_STAGE, SmartStore.Type.string),
+            new IndexSpec(CONFIGURATION_TIME_UP, SmartStore.Type.string),
+            new IndexSpec(CONFIGURATION_TIME_DOWN, SmartStore.Type.string),
+            new IndexSpec(CONFIGURATION_TIME_RI, SmartStore.Type.string)
     };
 
     public static final String[] ORDER_FIELDS_SYNC_DOWN = {
@@ -69,6 +59,22 @@ public class OrderObject extends SalesforceObject {
             CONFIGURATION_TIME_RI,
             INSTRUCTIONS,
             Constants.LAST_MODIFIED_DATE
+    };
+
+    public static final String ORDER_TYPE = "Order_Type__c ";
+    public static final String ORDER_SUBMITTED_STATUS = "Order_Submitted__c";
+    public static final String ORDER_STATUS = "Status";
+
+    public  static final String[] STATUS_NOT_TO_SYNC = {
+            "Draft",
+            "Completed"
+    };
+
+    public static final String[] LIST_OF_ORDERS_TO_SYNC = {
+            "Workorder",
+            "SoS",
+            "R&R",
+            "Custom Fab Request"
     };
 
     private boolean isLocallyModified;
