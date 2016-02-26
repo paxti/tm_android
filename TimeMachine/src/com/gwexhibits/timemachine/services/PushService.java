@@ -1,8 +1,11 @@
 package com.gwexhibits.timemachine.services;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.gwexhibits.timemachine.SearchActivity;
 import com.salesforce.androidsdk.push.PushNotificationInterface;
 
 /**
@@ -10,7 +13,8 @@ import com.salesforce.androidsdk.push.PushNotificationInterface;
  */
 public class PushService implements PushNotificationInterface {
     @Override
-    public void onPushMessageReceived(Bundle message) {
-        Log.d("MESSAGE", message.toString());
+    public void onPushMessageReceived(Context context, Bundle message) {
+        Intent mServiceIntent = new Intent(context, OrdersSyncService.class);
+        context.startService(mServiceIntent);
     }
 }
