@@ -13,6 +13,9 @@ import org.json.JSONObject;
  */
 public class OrderObject extends SalesforceObject {
 
+    public static final String ORDER_SUPE = "Orders";
+    public static final String ORDER_SF_OBJECT = "Order";
+
     public static final String CONFIGURATION = "Related_Opportunity__r.Configuration__r.";
 
     public static final String SFID = "Opp_SFID__c";
@@ -27,6 +30,31 @@ public class OrderObject extends SalesforceObject {
     public static final String CONFIGURATION_TIME_DOWN = CONFIGURATION + "Estimated_I_D_Time_Down__c";
     public static final String CONFIGURATION_TIME_RI = CONFIGURATION + "Estimated_RI_Time__c";
 
+
+    public static final String WORKORDER = "Workorder";
+    public static final String SOS = "SoS";
+    public static final String R_R = "R&R";
+    public static final String CUSTOM_FUB = "Custom Fab Request";
+
+    public static final String ORDER_TYPE = "Order_Type__c ";
+    public static final String ORDER_SUBMITTED_STATUS = "Order_Submitted__c";
+    public static final String ORDER_STATUS = "Status";
+
+    public static final String ORDER_STATUS_DRATF = "Draft";
+    public static final String ORDER_STATUS_COMPLITED = "Completed";
+
+
+    public  static final String[] STATUS_NOT_TO_SYNC = {
+            ORDER_STATUS_DRATF,
+            ORDER_STATUS_COMPLITED
+    };
+
+    public static final String[] LIST_OF_ORDERS_TO_SYNC = {
+            WORKORDER,
+            SOS,
+            R_R,
+            CUSTOM_FUB
+    };
 
     public static final String[] ORDER_FIELDS_SYNC_DOWN = {
             Constants.ID,
@@ -80,5 +108,13 @@ public class OrderObject extends SalesforceObject {
             return Constants.EMPTY_STRING;
         }
         return text;
+    }
+
+    public static String buildWhereRequest(){
+        return ORDER_TYPE + " IN ('" + TextUtils.join("','", LIST_OF_ORDERS_TO_SYNC) + "')"
+                + " AND " +
+                ORDER_SUBMITTED_STATUS + "=True" + " AND " +
+                ORDER_STATUS + " NOT IN ('" + TextUtils.join("','", STATUS_NOT_TO_SYNC) + "')"
+                ;
     }
 }
