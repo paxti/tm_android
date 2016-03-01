@@ -21,6 +21,7 @@ public class OrderObject extends SalesforceObject {
     public static final String CONFIGURATION = "Related_Opportunity__r.Configuration__r.";
 
     public static final String SFID = "Opp_SFID__c";
+    public static final String ORDER_TYPE = "Order_Type__c ";
     public static final String SHOW_NAME = "Show_Name__c";
     public static final String CLIENT_NAME = "Account.Name";
     public static final String SHIPPING_DATE = "GOLDEN_Targeted_Shipping_Date__c";
@@ -34,6 +35,7 @@ public class OrderObject extends SalesforceObject {
 
     public static IndexSpec[] ORDERS_INDEX_SPEC = {
             new IndexSpec("Id", SmartStore.Type.string),
+            new IndexSpec(ORDER_TYPE, SmartStore.Type.string),
             new IndexSpec(SFID, SmartStore.Type.string),
             new IndexSpec(SHOW_NAME, SmartStore.Type.string),
             new IndexSpec(CLIENT_NAME, SmartStore.Type.string),
@@ -48,6 +50,7 @@ public class OrderObject extends SalesforceObject {
 
     public static final String[] ORDER_FIELDS_SYNC_DOWN = {
             Constants.ID,
+            ORDER_TYPE,
             SFID,
             SHOW_NAME,
             CLIENT_NAME,
@@ -61,7 +64,6 @@ public class OrderObject extends SalesforceObject {
             Constants.LAST_MODIFIED_DATE
     };
 
-    public static final String ORDER_TYPE = "Order_Type__c ";
     public static final String ORDER_SUBMITTED_STATUS = "Order_Submitted__c";
     public static final String ORDER_STATUS = "Status";
 
@@ -118,9 +120,7 @@ public class OrderObject extends SalesforceObject {
 
     public static String buildWhereRequest(){
         return ORDER_TYPE + " IN ('" + TextUtils.join("','", LIST_OF_ORDERS_TO_SYNC) + "')"
-                + " AND " +
-                ORDER_SUBMITTED_STATUS + "=True" + " AND " +
-                ORDER_STATUS + " NOT IN ('" + TextUtils.join("','", STATUS_NOT_TO_SYNC) + "')"
-                ;
+                + " AND " + ORDER_SUBMITTED_STATUS + "=True" + " AND " +
+                ORDER_STATUS + " NOT IN ('" + TextUtils.join("','", STATUS_NOT_TO_SYNC) + "')";
     }
 }
