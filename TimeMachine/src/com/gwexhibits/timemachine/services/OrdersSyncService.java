@@ -2,7 +2,10 @@ package com.gwexhibits.timemachine.services;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.gwexhibits.timemachine.objects.OrderObject;
 import com.salesforce.androidsdk.accounts.UserAccount;
@@ -30,7 +33,6 @@ public class OrdersSyncService extends IntentService {
     private UserAccount account;
     private SmartStore smartStore;
     private SyncManager syncMgr;
-    private long syncId = -1;
 
     /**
      * Creates an IntentService.  Invoked by your subclass's constructor.
@@ -50,25 +52,29 @@ public class OrdersSyncService extends IntentService {
 
     public synchronized void syncDown() {
         smartStore.registerSoup(OrderObject.ORDER_SUPE, OrderObject.ORDERS_INDEX_SPEC);
-        final SyncManager.SyncUpdateCallback callback = new SyncManager.SyncUpdateCallback() {
+        final SyncManager.SyncUpdateCallback callbackSync = new SyncManager.SyncUpdateCallback() {
 
             @Override
             public void onUpdate(SyncState sync) {
-                Log.d(TAG, "Callback onUpdate");
+                Handler handler = new Handler(Looper.getMainLooper());
+
+                handler.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        Toast.makeText(OrdersSyncService.this.getApplicationContext(), "Updating data", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         };
+
         try {
-            if (syncId == -1) {
-                final SyncOptions options = SyncOptions.optionsForSyncDown(SyncState.MergeMode.OVERWRITE);
-                // IMPORTANT
-                final String soqlQuery = SOQLBuilder.getInstanceWithFields(OrderObject.ORDER_FIELDS_SYNC_DOWN)
-                        .from(OrderObject.ORDER_SF_OBJECT).where(OrderObject.buildWhereRequest()).limit(LIMIT).build();
-                final SyncDownTarget target = new SoqlSyncDownTarget(soqlQuery);
-                final SyncState sync = syncMgr.syncDown(target, options, OrderObject.ORDER_SUPE, callback);
-                syncId = sync.getId();
-            } else {
-                syncMgr.reSync(syncId, callback);
-            }
+            final SyncOptions options = SyncOptions.optionsForSyncDown(SyncState.MergeMode.OVERWRITE);
+            // IMPORTANT
+            final String soqlQuery = SOQLBuilder.getInstanceWithFields(OrderObject.ORDER_FIELDS_SYNC_DOWN)
+                    .from(OrderObject.ORDER_SF_OBJECT).where(OrderObject.buildWhereRequest()).limit(LIMIT).build();
+            final SyncDownTarget target = new SoqlSyncDownTarget(soqlQuery);
+            syncMgr.syncDown(target, options, OrderObject.ORDER_SUPE, callbackSync);
         } catch (JSONException e) {
             Log.e(TAG, "JSONException occurred while parsing", e);
         } catch (SyncManager.SmartSyncException e) {
