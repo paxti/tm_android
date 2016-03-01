@@ -1,11 +1,9 @@
 package com.gwexhibits.timemachine.services;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
-import com.gwexhibits.timemachine.SearchActivity;
+import com.salesforce.androidsdk.app.SalesforceSDKManager;
 import com.salesforce.androidsdk.push.PushNotificationInterface;
 
 /**
@@ -13,8 +11,8 @@ import com.salesforce.androidsdk.push.PushNotificationInterface;
  */
 public class PushService implements PushNotificationInterface {
     @Override
-    public void onPushMessageReceived(Context context, Bundle message) {
-        Intent mServiceIntent = new Intent(context, OrdersSyncService.class);
-        context.startService(mServiceIntent);
+    public void onPushMessageReceived(Bundle message) {
+        Intent mServiceIntent = new Intent(SalesforceSDKManager.getInstance().getAppContext(), OrdersSyncService.class);
+        SalesforceSDKManager.getInstance().getAppContext().startService(mServiceIntent);
     }
 }
