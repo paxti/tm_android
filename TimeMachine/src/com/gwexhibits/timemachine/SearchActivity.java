@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.widget.Button;
 
+import com.gwexhibits.timemachine.listeners.SearchBarListener;
 import com.gwexhibits.timemachine.services.OrdersSyncService;
 import com.quinny898.library.persistentsearch.SearchBox;
 import com.salesforce.androidsdk.accounts.UserAccountManager;
@@ -49,6 +50,8 @@ public class SearchActivity extends AppCompatActivity{
 
         search.enableVoiceRecognition(this);
         search.setInputType(InputType.TYPE_CLASS_NUMBER);
+        search.setSearchListener(new SearchBarListener(search, this));
+        search.setMaxLength(10);
     }
 
     @Override
