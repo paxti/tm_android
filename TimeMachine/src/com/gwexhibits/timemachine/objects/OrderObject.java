@@ -20,6 +20,8 @@ public class OrderObject extends SalesforceObject {
 
     public static final String CONFIGURATION = "Related_Opportunity__r.Configuration__r.";
 
+    public static final String CUSTOM_FAB = "Custom_Fab_Fulfillment_Approved__c";
+
     public static final String SFID = "Opp_SFID__c";
     public static final String ORDER_TYPE = "Order_Type__c ";
     public static final String SHOW_NAME = "Show_Name__c";
@@ -120,7 +122,7 @@ public class OrderObject extends SalesforceObject {
 
     public static String buildWhereRequest(){
         return ORDER_TYPE + " IN ('" + TextUtils.join("','", LIST_OF_ORDERS_TO_SYNC) + "')"
-                + " AND " + ORDER_SUBMITTED_STATUS + "=True" + " AND " +
+                + " AND (" + ORDER_SUBMITTED_STATUS + "=True OR " + CUSTOM_FAB + "=True)" + " AND " +
                 ORDER_STATUS + " NOT IN ('" + TextUtils.join("','", STATUS_NOT_TO_SYNC) + "')";
     }
 }
