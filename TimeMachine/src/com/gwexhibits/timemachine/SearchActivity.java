@@ -28,7 +28,6 @@ public class SearchActivity extends AppCompatActivity{
     private PasscodeManager passcodeManager;
     private UserSwitchReceiver userSwitchReceiver;
 
-    private Boolean isSearch;
     private RestClient client;
 
     @Bind(R.id.searchbox) SearchBox search;
@@ -148,7 +147,7 @@ public class SearchActivity extends AppCompatActivity{
     }
 
     @OnClick(R.id.button)
-    public void sayHi(Button button) {
+     public void sayHi(Button button) {
         Intent mServiceIntent = new Intent(this, OrdersSyncService.class);
         startService(mServiceIntent);
     }
@@ -158,4 +157,5 @@ public class SearchActivity extends AppCompatActivity{
         final Intent i = new Intent(this, SmartStoreInspectorActivity.class);
         startActivity(i);
     }
+
 }
