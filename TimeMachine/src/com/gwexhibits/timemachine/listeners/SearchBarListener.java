@@ -1,9 +1,11 @@
 package com.gwexhibits.timemachine.listeners;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 
+import com.gwexhibits.timemachine.OrderDetails;
 import com.gwexhibits.timemachine.R;
 import com.gwexhibits.timemachine.objects.OrderObject;
 import com.quinny898.library.persistentsearch.SearchBox;
@@ -84,6 +86,9 @@ public class SearchBarListener implements SearchBox.SearchListener {
 
     @Override
     public void onResultClick(SearchResult result) {
+        Intent showOrderDetails = new Intent(context, OrderDetails.class);
+        showOrderDetails.putExtra("order", result.value);
+        context.startActivity(showOrderDetails);
 
     }
 
@@ -92,7 +97,7 @@ public class SearchBarListener implements SearchBox.SearchListener {
         String account = object.getJSONObject("Account").getString("Name");
         String sfid = object.getString("Opp_SFID__c");
         String show = android.text.Html.fromHtml(object.getString("Show_Name__c")).toString();
-        String id = object.getString("Id");
+        String id = object.getString("_soupEntryId");
 
         String title = sfid + " " + account + "@" + show;
         int icon;
