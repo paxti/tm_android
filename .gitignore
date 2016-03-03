@@ -9,4 +9,5 @@ forcedroid/libs/SalesforceSDK/build/
 forcedroid/libs/SmartStore/build/
 forcedroid/libs/SmartSync/build/
 TimeMachine/build/
+TimeMachine/build.gradle
 /build/
