@@ -17,4 +17,21 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+
+    <style name="TextAppearance.Body1" parent="TextAppearance.AppCompat.Body1">
+        <item name="android:textSize">14sp</item> <!-- bug in AppCompat, can remove this when it's fixed -->
+        <item name="android:textColor">?android:textColorSecondary</item>
+    </style>
+
+    <style name="Body1Text">
+        <item name="android:textAppearance">@style/TextAppearance.Body1</item>
+        <item name="android:lineSpacingMultiplier">@dimen/body_1_spacing</item>
+    </style>
+
+    <style name="ListHeader">
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColor">@color/secondary_text</item>
+        <item name="android:textSize">@dimen/text_size_large</item>
+    </style>
+
 </resources>

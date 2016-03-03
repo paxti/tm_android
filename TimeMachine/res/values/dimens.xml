@@ -5,4 +5,17 @@
     <dimen name="app_bar_height">200dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="text_margin">16dp</dimen>
+
+    <item name="body_1_spacing" format="float" type="dimen">1.22448979592</item>
+    <dimen name="spacing_normal">8dp</dimen>
+    <dimen name="keyline_2">72dp</dimen>
+    <dimen name="text_size_large">18sp</dimen>
+    <dimen name="my_schedule_icon_size">24dp</dimen>
+    <dimen name="my_schedule_icon_horizontal_padding">24dp</dimen>
+    <dimen name="text_size_medium">14sp</dimen>
+    <dimen name="icon_right_margin">32dp</dimen>
+
+    <dimen name="normal_padding">8dp</dimen>
+
+    <dimen name="margin_for_header_separator">72dp</dimen>
 </resources>

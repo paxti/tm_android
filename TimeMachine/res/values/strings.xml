@@ -105,4 +105,8 @@
     <string name="cancel">Cancel</string>
     <string name="fire">OK</string>
     <string name="stage_dialog_title">Please select stage</string>
+    <string name="placeholder_session_title">Some title</string>
+    <string name="secondary_text">Something here as well</string>
+    <string name="my_schedule_rate_this_session">Rate this session</string>
+    <string name="placeholder_session_start_time">8:00 PM</string>
 </resources>
