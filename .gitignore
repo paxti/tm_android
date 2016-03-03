@@ -10,4 +10,5 @@ forcedroid/libs/SmartStore/build/
 forcedroid/libs/SmartSync/build/
 TimeMachine/build/
 TimeMachine/build.gradle
+TimeMachine/TimeMachine.iml
 /build/
