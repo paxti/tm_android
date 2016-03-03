@@ -36,7 +36,6 @@ public class StagePopUp extends DialogFragment {
                         public void onClick(DialogInterface dialog, int id) {
                             Intent showOrderDetails = new Intent(getActivity(), OrderDetails.class);
                             showOrderDetails.putExtra("order", bundle.getString("order"));
-                            showOrderDetails.putExtra("stage", bundle.getStringArray("options")[id]);
                             getActivity().startActivity(showOrderDetails);
                             dialog.dismiss();
 

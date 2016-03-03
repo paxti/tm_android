@@ -36,8 +36,6 @@ public class OrderDetails extends AppCompatActivity {
     @Bind(R.id.subtitle) TextView subtitle;
     @Bind(R.id.list) RecyclerView mRecyclerView;
 
-    private UserAccount account;
-    private SmartStore smartStore;
     private JSONObject order = null;
     private StaggeredGridLayoutManager mStaggeredLayoutManager;
     private OrderDetailsAdapter mAdapter;
@@ -48,28 +46,25 @@ public class OrderDetails extends AppCompatActivity {
         setContentView(R.layout.activity_order_details);
         ButterKnife.bind(this);
 
-/*        account = SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser();
-        smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);
 
-        String id = getIntent().getStringExtra("order");
 
         String account = "";
-        String sfid = "";
-        String show ="";
+        String sfid = "Something went wrong";
+        String show = "Contact your admin";
 
         try {
-            JSONArray array = smartStore.retrieve(OrderObject.ORDER_SUPE, Long.parseLong(id));
-            order = (JSONObject) array.get(0);
+            String s = getIntent().getStringExtra("order");
+            order = new JSONObject(s);
             account = order.getJSONObject("Account").getString("Name");
-            sfid = order.getString("Opp_SFID__c");
-            show = android.text.Html.fromHtml(order.getString("Show_Name__c")).toString();
+            sfid = order.getString(OrderObject.SFID);
+            show = android.text.Html.fromHtml(order.getString(OrderObject.SHOW_NAME)).toString();
         } catch (JSONException e) {
             e.printStackTrace();
-        }*/
+        }
 
 
-        collapsingToolbar.setTitle("SFID: " + "sfid");
-        subtitle.setText(account + "@" + "show");
+        collapsingToolbar.setTitle("SFID: " + sfid);
+        subtitle.setText(account + "@" + show);
 
         mStaggeredLayoutManager = new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(mStaggeredLayoutManager);

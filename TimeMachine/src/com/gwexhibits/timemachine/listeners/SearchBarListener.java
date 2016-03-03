@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.util.ArrayMap;
@@ -98,11 +99,8 @@ public class SearchBarListener implements SearchBox.SearchListener {
     public void onResultClick(SearchResult result) {
 
         try {
-            JSONObject object =
-                    smartStore.retrieve(
-                            OrderObject.ORDER_SUPE, Long.parseLong(result.value)).getJSONObject(0);
 
-            String[] list = OrderObject.getPhasesForType(object.getString(OrderObject.ORDER_TYPE));
+            String[] list = OrderObject.getPhasesForType(result.value.getString(OrderObject.ORDER_TYPE));
 
 
             if(list.length > 1){
@@ -110,19 +108,15 @@ public class SearchBarListener implements SearchBox.SearchListener {
 
                 DialogFragment phaseDialog = new StagePopUp();
                 Bundle bundle = new Bundle();
-                bundle.putString("order", result.value);
+                bundle.putString("order", result.value.toString());
                 bundle.putStringArray("options", list);
                 phaseDialog.setArguments(bundle);
                 phaseDialog.show(activity.getSupportFragmentManager(), "PhaseDialog");
             }else{
                 Intent showOrderDetails = new Intent(context, OrderDetails.class);
-                showOrderDetails.putExtra("order", result.value);
-                showOrderDetails.putExtra("stage", list[0]);
+                showOrderDetails.putExtra("order", result.value.toString());
                 context.startActivity(showOrderDetails);
             }
-
-
-
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -135,7 +129,6 @@ public class SearchBarListener implements SearchBox.SearchListener {
         String account = object.getJSONObject("Account").getString("Name");
         String sfid = object.getString(OrderObject.SFID);
         String show = android.text.Html.fromHtml(object.getString(OrderObject.SHOW_NAME)).toString();
-        String id = object.getString("_soupEntryId");
 
         String title = sfid + " " + account + "@" + show;
         int icon;
@@ -169,10 +162,10 @@ public class SearchBarListener implements SearchBox.SearchListener {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             return new SearchResult(title,
-                    id,
+                    object,
                     this.context.getResources().getDrawable(icon, context.getTheme()));
         } else {
-            return new SearchResult(title, id, this.context.getDrawable(icon));
+            return new SearchResult(title, object, this.context.getDrawable(icon));
         }
     }
 
