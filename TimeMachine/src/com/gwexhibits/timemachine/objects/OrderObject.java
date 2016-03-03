@@ -23,7 +23,8 @@ public class OrderObject extends SalesforceObject {
     public static final String CUSTOM_FAB = "Custom_Fab_Fulfillment_Approved__c";
 
     public static final String SFID = "Opp_SFID__c";
-    public static final String ORDER_TYPE = "Order_Type__c ";
+    public static final String ORDER_TYPE = "Order_Type__c";
+    public static final String ORDER_NUMBER = "OrderNumber";
     public static final String SHOW_NAME = "Show_Name__c";
     public static final String CLIENT_NAME = "Account.Name";
     public static final String SHIPPING_DATE = "GOLDEN_Targeted_Shipping_Date__c";
@@ -38,6 +39,7 @@ public class OrderObject extends SalesforceObject {
     public static IndexSpec[] ORDERS_INDEX_SPEC = {
             new IndexSpec("Id", SmartStore.Type.string),
             new IndexSpec(ORDER_TYPE, SmartStore.Type.string),
+            new IndexSpec(ORDER_NUMBER, SmartStore.Type.string),
             new IndexSpec(SFID, SmartStore.Type.string),
             new IndexSpec(SHOW_NAME, SmartStore.Type.string),
             new IndexSpec(CLIENT_NAME, SmartStore.Type.string),
@@ -53,6 +55,7 @@ public class OrderObject extends SalesforceObject {
     public static final String[] ORDER_FIELDS_SYNC_DOWN = {
             Constants.ID,
             ORDER_TYPE,
+            ORDER_NUMBER,
             SFID,
             SHOW_NAME,
             CLIENT_NAME,
@@ -79,6 +82,12 @@ public class OrderObject extends SalesforceObject {
             "SoS",
             "R&R",
             "Custom Fab Request"
+    };
+
+    public static final String[] LIST_OF_STAGES_WORKORDER = {
+            "Pre-Stage",
+            "RI",
+            "I&D"
     };
 
     private boolean isLocallyModified;
@@ -122,7 +131,26 @@ public class OrderObject extends SalesforceObject {
 
     public static String buildWhereRequest(){
         return ORDER_TYPE + " IN ('" + TextUtils.join("','", LIST_OF_ORDERS_TO_SYNC) + "')"
-                + " AND (" + ORDER_SUBMITTED_STATUS + "=True OR " + CUSTOM_FAB + "=True)" + " AND " +
-                ORDER_STATUS + " NOT IN ('" + TextUtils.join("','", STATUS_NOT_TO_SYNC) + "')";
+                + " AND "
+                + "(" + ORDER_SUBMITTED_STATUS + "=True OR " + CUSTOM_FAB + "=True)"
+                + " AND "
+                + ORDER_STATUS + " NOT IN ('" + TextUtils.join("','", STATUS_NOT_TO_SYNC) + "')";
+    }
+
+    public static String[] getPhasesForType(String type){
+
+        switch (type){
+            case "Workorder":
+                return new String[]{"Pre-Stage", "RI", "I&D"};
+            case "SoS":
+                return new String[]{"Sos"};
+            case "R&R":
+                return new String[]{"Assessment", "Fulfilment"};
+            case "Custom Fab Request":
+                return new String[]{"Custom Fab Request"};
+            default:
+                return new String[]{"Wrong type"};
+        }
+
     }
 }
