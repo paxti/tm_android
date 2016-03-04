@@ -75,12 +75,12 @@ public class SearchBarListener implements SearchBox.SearchListener {
                 null,
                 20);
 
-        List<JSONObject> objects = null;
         ArrayList<SearchResult> results = new ArrayList<SearchResult>();
         try {
-            objects = getFilteredList(smartStore.query(t, 0));
-            for (JSONObject object : objects) {
-                results.add(createOption(object));
+            JSONArray array = smartStore.query(t, 0);
+
+            for(int i = 0; i < array.length(); i++ ){
+                results.add(createOption(array.getJSONObject(i)));
             }
         } catch (JSONException e) {
             Log.e("jhkj", e.getMessage());
@@ -129,8 +129,9 @@ public class SearchBarListener implements SearchBox.SearchListener {
         String account = object.getJSONObject("Account").getString("Name");
         String sfid = object.getString(OrderObject.SFID);
         String show = android.text.Html.fromHtml(object.getString(OrderObject.SHOW_NAME)).toString();
+        String orderNumber = object.getString(OrderObject.ORDER_NUMBER).replaceFirst("^0+(?!$)", "");
 
-        String title = sfid + " " + account + "@" + show;
+        String title = sfid + " (*" + orderNumber + ") " + account + "@" + show;
         int icon;
 
         switch (object.getString(OrderObject.ORDER_TYPE)){
@@ -167,25 +168,5 @@ public class SearchBarListener implements SearchBox.SearchListener {
         } else {
             return new SearchResult(title, object, this.context.getDrawable(icon));
         }
-    }
-
-    private ArrayList<JSONObject> getFilteredList(JSONArray options){
-
-        Map<String, JSONObject> map = new ArrayMap<>();
-
-        for (int i = 0; i < options.length(); i++){
-            try {
-                JSONObject object = options.getJSONObject(i);
-                String key = object.getString("Order_Type__c") + object.getString("Opp_SFID__c");
-
-                if (!map.containsKey(key)){
-                    map.put(key, object);
-                }
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        return new ArrayList<JSONObject>(map.values());
     }
 }
