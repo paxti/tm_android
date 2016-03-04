@@ -1,10 +1,15 @@
 package com.gwexhibits.timemachine;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.View;
@@ -12,11 +17,7 @@ import android.widget.TextView;
 
 import com.gwexhibits.timemachine.objects.OrderObject;
 import com.gwexhibits.timemachine.objects.TimeObject;
-import com.salesforce.androidsdk.accounts.UserAccount;
-import com.salesforce.androidsdk.smartstore.store.SmartStore;
-import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,14 +28,17 @@ import java.util.TimeZone;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
-public class OrderDetails extends AppCompatActivity {
+public class OrderDetails extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String PREFS_NAME = "MyPrefsFile";
+    public static final String CURRENT_ORDER = "current_order";
 
     @Bind(R.id.toolbar_layout) CollapsingToolbarLayout collapsingToolbar;
     @Bind(R.id.subtitle) TextView subtitle;
     @Bind(R.id.list) RecyclerView mRecyclerView;
+    @Bind(R.id.start_new_task) FloatingActionButton startNewTaskButton;
 
     private JSONObject order = null;
     private StaggeredGridLayoutManager mStaggeredLayoutManager;
@@ -62,7 +66,6 @@ public class OrderDetails extends AppCompatActivity {
             e.printStackTrace();
         }
 
-
         collapsingToolbar.setTitle("SFID: " + sfid);
         subtitle.setText(account + "@" + show);
 
@@ -70,7 +73,11 @@ public class OrderDetails extends AppCompatActivity {
         mRecyclerView.setLayoutManager(mStaggeredLayoutManager);
         mAdapter = new OrderDetailsAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
+
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
     /*@OnClick(R.id.button5)
@@ -135,6 +142,13 @@ public class OrderDetails extends AppCompatActivity {
 
     }*/
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+    }
+
     private JSONObject createNewRecord(){
         JSONObject object = new JSONObject();
 
@@ -164,4 +178,63 @@ public class OrderDetails extends AppCompatActivity {
 
         return object;
     }
+
+    @OnClick(R.id.start_new_task)
+    public void startTask(View view) {
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        try {
+            editor.putString(CURRENT_ORDER, order.getString("_soupEntryId"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        editor.commit();
+
+    }
+
+
+    private void hideStartNewTaskButton(){
+        CoordinatorLayout.LayoutParams p = (CoordinatorLayout.LayoutParams) startNewTaskButton.getLayoutParams();
+        p.setAnchorId(View.NO_ID);
+        startNewTaskButton.setLayoutParams(p);
+        startNewTaskButton.setVisibility(View.GONE);
+
+        mAdapter.addElement(2, 0);
+        mRecyclerView.scrollToPosition(0);
+    }
+
+    private void showStartNewTaskButton(){
+        CoordinatorLayout.LayoutParams p = (CoordinatorLayout.LayoutParams) startNewTaskButton.getLayoutParams();
+        p.setAnchorId(R.id.app_bar);
+        startNewTaskButton.setLayoutParams(p);
+        startNewTaskButton.setVisibility(View.VISIBLE);
+
+        mAdapter.removeElement(2);
+        mRecyclerView.scrollToPosition(0);
+    }
+
+    private boolean isTaskRunning(){
+
+        boolean isTaskRunning = false;
+
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        if (settings.getString(CURRENT_ORDER, "").length() > 1){
+            isTaskRunning = true;
+        }
+
+        return isTaskRunning;
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(CURRENT_ORDER)) {
+
+            if(sharedPreferences.getString(CURRENT_ORDER, "").length() > 0){
+                hideStartNewTaskButton();
+            }else{
+                showStartNewTaskButton();
+            }
+        }
+    }
+
 }

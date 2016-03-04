@@ -31,6 +31,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/abc_text_size_subhead_material"
+                android:singleLine="true"
                 android:textColor="@android:color/white"
                 android:layout_marginBottom="32dp"
                 android:layout_marginEnd="64dp"
@@ -58,30 +59,14 @@
         android:scrollbars="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <com.github.clans.fab.FloatingActionMenu
-        android:id="@+id/float_menu"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingRight="10dp"
-        android:paddingBottom="10dp"
-        android:paddingLeft="10dp"
-        fab:menu_labels_position="left"
-        fab:menu_labels_ellipsize="end"
-        fab:menu_labels_singleLine="true"
-        fab:menu_backgroundColor="#ccffffff">
-
-        <com.github.clans.fab.FloatingActionButton
-            android:id="@+id/start_task"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/fab_add"
-            android:tint="@color/green"
-            fab:menu_colorNormal="#FFB805"
-            fab:fab_size="normal"
-            fab:fab_label="@string/start_new_task" />
-
-
-    </com.github.clans.fab.FloatingActionMenu>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/start_new_task"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@drawable/fab_add"
+        app:layout_anchor="@id/app_bar"
+        app:layout_anchorGravity="bottom|end" />
 
 
 
