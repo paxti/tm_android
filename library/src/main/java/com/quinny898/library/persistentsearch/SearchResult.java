@@ -2,10 +2,12 @@ package com.quinny898.library.persistentsearch;
 
 import android.graphics.drawable.Drawable;
 
+import org.json.JSONObject;
+
 public class SearchResult {
     public String title;
     public Drawable icon;
-    public String value;
+    public JSONObject value;
     public boolean clickable;
 
     /**
@@ -14,7 +16,7 @@ public class SearchResult {
      * @param value
      * @param icon
      */
-    public SearchResult(String title, String value, Drawable icon) {
+    public SearchResult(String title, JSONObject value, Drawable icon) {
         this.title = title;
         this.icon = icon;
         this.value = value;
@@ -28,7 +30,7 @@ public class SearchResult {
      * @param icon
      * @param clickable
      */
-    public SearchResult(String title, String value, Drawable icon, boolean clickable) {
+    public SearchResult(String title, JSONObject value, Drawable icon, boolean clickable) {
         this.title = title;
         this.icon = icon;
         this.value = value;

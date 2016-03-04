@@ -41,6 +41,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -776,7 +778,7 @@ public class SearchBox extends RelativeLayout {
 	}
 
 	private void search(String text) {
-		SearchResult option = new SearchResult(text, "", null);
+		SearchResult option = new SearchResult(text, new JSONObject(), null);
 		search(option, false);
 	}
 
@@ -875,7 +877,7 @@ public class SearchBox extends RelativeLayout {
 	private SearchResult noSearchResults(){
 		return new SearchResult(
 				getNoResultsText(),
-				"",
+				new JSONObject(),
 				(getContext().getResources().getDrawable(R.drawable.ic_warning)),
 				false
 		);
