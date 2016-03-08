@@ -47,7 +47,6 @@ public class SearchActivity extends AppCompatActivity{
         setContentView(R.layout.activity_search);
         ButterKnife.bind(this);
 
-        search.enableVoiceRecognition(this);
         search.setInputType(InputType.TYPE_CLASS_NUMBER);
         search.setSearchListener(new SearchBarListener(search, this));
         search.setMaxLength(10);
@@ -139,7 +138,6 @@ public class SearchActivity extends AppCompatActivity{
      * @author bhariharan
      */
     private class ActivityUserSwitchReceiver extends UserSwitchReceiver {
-
         @Override
         protected void onUserSwitch() {
             refreshIfUserSwitched();

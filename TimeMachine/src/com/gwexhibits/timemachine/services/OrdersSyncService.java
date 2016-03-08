@@ -7,9 +7,8 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.gwexhibits.timemachine.objects.OrderObject;
+import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.salesforce.androidsdk.accounts.UserAccount;
-import com.salesforce.androidsdk.smartstore.store.IndexSpec;
 import com.salesforce.androidsdk.smartstore.store.SmartStore;
 import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
 import com.salesforce.androidsdk.smartsync.manager.SyncManager;

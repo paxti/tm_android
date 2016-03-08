@@ -23,4 +23,11 @@
     <dimen name="normal_padding">8dp</dimen>
 
     <dimen name="margin_for_header_separator">72dp</dimen>
+    <dimen name="stream_card_corner_radius">4dp</dimen>
+    <dimen name="card_elevation">2dp</dimen>
+
+
+    <dimen name="order_details_item_layout_left_margin">72dp</dimen>
+
+    <dimen name="card_base_cardwithlist_dividerHeight">0dp</dimen>
 </resources>

@@ -49,7 +49,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".OrderDetails"
+            android:name=".OrderDetailsActivity"
             android:label="@string/title_activity_order_details"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>

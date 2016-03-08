@@ -4,18 +4,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
-import android.util.ArrayMap;
 import android.util.Log;
 
-import com.gwexhibits.timemachine.OrderDetails;
+import com.gwexhibits.timemachine.OrderDetailsActivity;
 import com.gwexhibits.timemachine.R;
-import com.gwexhibits.timemachine.SearchActivity;
 import com.gwexhibits.timemachine.fragments.StagePopUp;
-import com.gwexhibits.timemachine.objects.OrderObject;
-import com.gwexhibits.timemachine.objects.TimeObject;
+import com.gwexhibits.timemachine.objects.OrderDetails;
+import com.gwexhibits.timemachine.objects.sf.OrderObject;
+import com.gwexhibits.timemachine.utils.Utils;
 import com.quinny898.library.persistentsearch.SearchBox;
 import com.quinny898.library.persistentsearch.SearchResult;
 import com.salesforce.androidsdk.accounts.UserAccount;
@@ -28,9 +26,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by psyfu on 2/26/2016.
@@ -48,7 +43,6 @@ public class SearchBarListener implements SearchBox.SearchListener {
         smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);
         this.context = context;
     }
-
 
     @Override
     public void onSearchOpened() {
@@ -68,7 +62,7 @@ public class SearchBarListener implements SearchBox.SearchListener {
     @Override
     public void onSearchTermChanged(String term) {
 
-        QuerySpec t = QuerySpec.buildLikeQuerySpec(OrderObject.ORDER_SUPE,
+        QuerySpec querySpec = QuerySpec.buildLikeQuerySpec(OrderObject.ORDER_SUPE,
                 OrderObject.SFID,
                 '%' + term + '%',
                 null,
@@ -77,13 +71,13 @@ public class SearchBarListener implements SearchBox.SearchListener {
 
         ArrayList<SearchResult> results = new ArrayList<SearchResult>();
         try {
-            JSONArray array = smartStore.query(t, 0);
+            JSONArray array = smartStore.query(querySpec, 0);
 
             for(int i = 0; i < array.length(); i++ ){
                 results.add(createOption(array.getJSONObject(i)));
             }
         } catch (JSONException e) {
-            Log.e("jhkj", e.getMessage());
+            //TODO: Show error
             e.printStackTrace();
         }
 
@@ -99,22 +93,22 @@ public class SearchBarListener implements SearchBox.SearchListener {
     public void onResultClick(SearchResult result) {
 
         try {
-
             String[] list = OrderObject.getPhasesForType(result.value.getString(OrderObject.ORDER_TYPE));
-
 
             if(list.length > 1){
                 FragmentActivity activity = (FragmentActivity) context;
 
                 DialogFragment phaseDialog = new StagePopUp();
                 Bundle bundle = new Bundle();
-                bundle.putString("order", result.value.toString());
-                bundle.putStringArray("options", list);
+                bundle.putString(OrderDetailsActivity.ORDER_KEY, result.value.toString());
+                bundle.putStringArray(StagePopUp.LIST_OF_PHASES_KEY, list);
                 phaseDialog.setArguments(bundle);
-                phaseDialog.show(activity.getSupportFragmentManager(), "PhaseDialog");
+                phaseDialog.show(activity.getSupportFragmentManager(),
+                        context.getString(R.string.stage_dialog_tag));
             }else{
-                Intent showOrderDetails = new Intent(context, OrderDetails.class);
-                showOrderDetails.putExtra("order", result.value.toString());
+                Intent showOrderDetails = new Intent(context, OrderDetailsActivity.class);
+                showOrderDetails.putExtra(OrderDetailsActivity.ORDER_KEY, result.value.toString());
+                showOrderDetails.putExtra(OrderDetailsActivity.PHASE_KEY, list[0]);
                 context.startActivity(showOrderDetails);
             }
 
@@ -126,7 +120,7 @@ public class SearchBarListener implements SearchBox.SearchListener {
 
     private SearchResult createOption(JSONObject object) throws JSONException {
 
-        String account = object.getJSONObject("Account").getString("Name");
+        String account = Utils.getStringValue(object, OrderObject.CLIENT_NAME);
         String sfid = object.getString(OrderObject.SFID);
         String show = android.text.Html.fromHtml(object.getString(OrderObject.SHOW_NAME)).toString();
         String orderNumber = object.getString(OrderObject.ORDER_NUMBER).replaceFirst("^0+(?!$)", "");

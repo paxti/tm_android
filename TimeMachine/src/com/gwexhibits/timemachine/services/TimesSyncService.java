@@ -4,7 +4,7 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
 
-import com.gwexhibits.timemachine.objects.TimeObject;
+import com.gwexhibits.timemachine.objects.sf.TimeObject;
 import com.salesforce.androidsdk.accounts.UserAccount;
 import com.salesforce.androidsdk.smartstore.store.SmartStore;
 import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;

@@ -1,4 +1,4 @@
-package com.gwexhibits.timemachine.objects;
+package com.gwexhibits.timemachine.objects.sf;
 
 import android.text.TextUtils;
 
@@ -86,8 +86,8 @@ public class OrderObject extends SalesforceObject {
 
     public static final String[] LIST_OF_STAGES_WORKORDER = {
             "Pre-Stage",
-            "RI",
-            "I&D"
+            "I&D",
+            "RI"
     };
 
     private boolean isLocallyModified;
