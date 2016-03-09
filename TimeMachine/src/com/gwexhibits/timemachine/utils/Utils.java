@@ -2,6 +2,8 @@ package com.gwexhibits.timemachine.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -71,5 +73,12 @@ public class Utils {
     public static String getCurrentTimeInSfFormat(){
         SimpleDateFormat dateFormat = new SimpleDateFormat(SF_FORMAT, Locale.US);
         return dateFormat.format(new Date());
+    }
+
+    public static boolean isInternetAvailable(Context context){
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
 }

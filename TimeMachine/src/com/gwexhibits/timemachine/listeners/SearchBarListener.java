@@ -46,21 +46,23 @@ public class SearchBarListener implements SearchBox.SearchListener {
 
     @Override
     public void onSearchOpened() {
-
+        Log.d("TAG", "Oppend");
     }
 
     @Override
     public void onSearchCleared() {
-
+        Log.d("TAG", "Cleared");
     }
 
     @Override
     public void onSearchClosed() {
-
+        Log.d("TAG", "Closed");
     }
 
     @Override
     public void onSearchTermChanged(String term) {
+
+        Log.d("TAG", "Term is: " + term);
 
         QuerySpec querySpec = QuerySpec.buildLikeQuerySpec(OrderObject.ORDER_SUPE,
                 OrderObject.SFID,
@@ -86,7 +88,7 @@ public class SearchBarListener implements SearchBox.SearchListener {
 
     @Override
     public void onSearch(String result) {
-
+        Log.d("TAG", "On search");
     }
 
     @Override
@@ -115,6 +117,7 @@ public class SearchBarListener implements SearchBox.SearchListener {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        Log.d("TAG", "On result click");
 
     }
 
