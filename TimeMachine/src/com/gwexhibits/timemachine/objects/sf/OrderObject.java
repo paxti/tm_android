@@ -37,7 +37,7 @@ public class OrderObject extends SalesforceObject {
     public static final String CONFIGURATION_TIME_RI = CONFIGURATION + "Estimated_RI_Time__c";
 
     public static IndexSpec[] ORDERS_INDEX_SPEC = {
-            new IndexSpec("Id", SmartStore.Type.string),
+            new IndexSpec(Constants.ID, SmartStore.Type.string),
             new IndexSpec(ORDER_TYPE, SmartStore.Type.string),
             new IndexSpec(ORDER_NUMBER, SmartStore.Type.string),
             new IndexSpec(SFID, SmartStore.Type.string),
