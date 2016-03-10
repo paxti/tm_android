@@ -4,6 +4,7 @@ package com.gwexhibits.timemachine.objects.sf;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.gwexhibits.timemachine.utils.Utils;
 import com.salesforce.androidsdk.smartstore.store.IndexSpec;
 import com.salesforce.androidsdk.smartstore.store.SmartStore;
 import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
@@ -11,6 +12,7 @@ import com.salesforce.androidsdk.smartsync.manager.SyncManager;
 import com.salesforce.androidsdk.smartsync.model.SalesforceObject;
 import com.salesforce.androidsdk.smartsync.util.Constants;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -101,5 +103,32 @@ public class TimeObject extends SalesforceObject {
         return "CreatedById='" +
                 SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser().getUserId() +
                 "'";
+    }
+
+    public static JSONObject createTimeObjectStartedNow(String orderId) throws JSONException{
+        JSONObject object = new JSONObject();
+
+        JSONObject additionalInfo = new JSONObject();
+
+
+        additionalInfo.put("type", TIME_SF_OBJECT);
+        object.put("Id", String.valueOf(System.currentTimeMillis()));
+        object.put(START_TIME, Utils.getCurrentTimeInSfFormat());
+        object.put(ORDER, orderId);
+        object.put("__local__", true);
+        object.put("__locally_created__", true);
+        object.put("__locally_updated__", false);
+        object.put("__locally_deleted__", false);
+        object.put("attributes", additionalInfo);
+
+        return object;
+    }
+
+    public static JSONObject createTimeObjectStopedNow(JSONObject object) throws JSONException {
+        object.put(TimeObject.END_TIME, Utils.getCurrentTimeInSfFormat());
+        object.put("__local__", true);
+        object.put("__locally_updated__", true);
+
+        return object;
     }
 }
