@@ -1,6 +1,7 @@
 package com.gwexhibits.timemachine;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -8,6 +9,7 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -15,8 +17,10 @@ import com.gwexhibits.timemachine.objects.OrderDetails;
 import com.gwexhibits.timemachine.cards.OrderDetailsSections;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.cards.TaskStatusCard;
+import com.gwexhibits.timemachine.objects.sf.TimeObject;
 import com.gwexhibits.timemachine.utils.Utils;
 import com.salesforce.androidsdk.smartstore.store.SmartStore;
+import com.salesforce.androidsdk.smartsync.util.Constants;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -114,6 +118,10 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
         try {
             OrderDetails details = new OrderDetails(currentOrder.getLong(SmartStore.SOUP_ENTRY_ID));
 
+            if(Utils.isCurrentTaskRunning(this)){
+                hideStartNewTaskButton();
+            }
+
             for (OrderDetailsSections section : details.getDetailsSection()){
                 if (section.getListItems().size() > 0) {
                     cards.add(section);
@@ -132,12 +140,15 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     @OnClick(R.id.start_new_task)
     public void startTask(View view) {
         try {
-            Utils.addCurrentTask(this, currentOrder.getString(SmartStore.SOUP_ENTRY_ID));
+            JSONObject newTaskEntry = TimeObject.createTimeObjectStartedNow(currentOrder.getString(Constants.ID));
+            JSONObject createdTaskEntry = Utils.saveToSmartStore(TimeObject.TIME_SUPE, newTaskEntry);
+            Utils.addCurrentTask(this, createdTaskEntry.getString(SmartStore.SOUP_ENTRY_ID));
+            Utils.addCurrentOrder(this, currentOrder);
         } catch (JSONException e) {
             e.printStackTrace();
+            Log.e("Error", e.getMessage());
         }
     }
-
 
     private void hideStartNewTaskButton(){
         CoordinatorLayout.LayoutParams p = (CoordinatorLayout.LayoutParams) startNewTaskButton.getLayoutParams();

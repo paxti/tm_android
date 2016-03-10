@@ -205,6 +205,8 @@ public class SearchBox extends RelativeLayout {
 							R.drawable.ic_action_mic));
 					if(initialResults != null){
 						setInitialResults();
+					}else{
+						mAdapter.notifyDataSetChanged();
 					}
 				}
 			}
