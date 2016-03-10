@@ -9,6 +9,8 @@ import android.widget.TextView;
 import com.gwexhibits.timemachine.R;
 import com.gwexhibits.timemachine.utils.Utils;
 
+import org.json.JSONException;
+
 import it.gmariotti.cardslib.library.internal.Card;
 
 /**
@@ -37,7 +39,11 @@ public class TaskStatusCard extends Card {
         stopTask.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Utils.removeCurrentTask(context);
+                try {
+                    Utils.stopCurrentTask(context, "My best note ever");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
