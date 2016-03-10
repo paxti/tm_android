@@ -18,6 +18,7 @@ import com.quinny898.library.persistentsearch.SearchBox;
 import com.quinny898.library.persistentsearch.SearchResult;
 import com.salesforce.androidsdk.accounts.UserAccount;
 import com.salesforce.androidsdk.smartstore.store.QuerySpec;
+import com.salesforce.androidsdk.smartstore.store.SmartSqlHelper;
 import com.salesforce.androidsdk.smartstore.store.SmartStore;
 import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
 
@@ -46,23 +47,18 @@ public class SearchBarListener implements SearchBox.SearchListener {
 
     @Override
     public void onSearchOpened() {
-        Log.d("TAG", "Oppend");
     }
 
     @Override
     public void onSearchCleared() {
-        Log.d("TAG", "Cleared");
     }
 
     @Override
     public void onSearchClosed() {
-        Log.d("TAG", "Closed");
     }
 
     @Override
     public void onSearchTermChanged(String term) {
-
-        Log.d("TAG", "Term is: " + term);
 
         QuerySpec querySpec = QuerySpec.buildLikeQuerySpec(OrderObject.ORDER_SUPE,
                 OrderObject.SFID,
@@ -80,7 +76,9 @@ public class SearchBarListener implements SearchBox.SearchListener {
             }
         } catch (JSONException e) {
             //TODO: Show error
-            e.printStackTrace();
+            Log.e("Error", e.getMessage());
+        }catch (SmartSqlHelper.SmartSqlException smartStoreException){
+            Log.e("Error", smartStoreException.getMessage());
         }
 
         searchBox.addAllResults(results);
@@ -88,7 +86,6 @@ public class SearchBarListener implements SearchBox.SearchListener {
 
     @Override
     public void onSearch(String result) {
-        Log.d("TAG", "On search");
     }
 
     @Override
