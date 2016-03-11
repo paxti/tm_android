@@ -7,6 +7,7 @@
     <string name="app_package">com.gwexhibits.timemachine</string>
     <string name="error_message">Something went wrong</string>
     <string name="empty"></string>
+    <string name="something_went_wrong">Something went wrong we will try to sync later</string>
 
     <!--Search activity-->
 
@@ -24,5 +25,10 @@
     <!--Stage pop-up-->
     <string name="stage_dialog_title">Please select stage</string>
     <string name="stage_dialog_tag">PhaseDialog</string>
+
+    <!--TimeSyncService-->
+    <string name="you_are_offline">You are offline we will try to sync later</string>
+    <string name="times_uploaded_to_sf">Times uploaded to SalesForce</string>
+    <string name="sync_with_sf_complited">Sync with SalesForce is completed</string>
 
 </resources>

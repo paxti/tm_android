@@ -1,10 +1,17 @@
 package com.gwexhibits.timemachine.services;
 
+import android.app.AlarmManager;
 import android.app.IntentService;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.gwexhibits.timemachine.OrderDetailsActivity;
+import com.gwexhibits.timemachine.broadcast.TaskSyncAlarmReceiver;
 import com.gwexhibits.timemachine.objects.sf.TimeObject;
+import com.gwexhibits.timemachine.utils.Utils;
 import com.salesforce.androidsdk.accounts.UserAccount;
 import com.salesforce.androidsdk.smartstore.store.SmartStore;
 import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
@@ -27,14 +34,16 @@ import java.util.List;
 public class TimesSyncService extends IntentService {
 
     private static final Integer LIMIT = 10000;
-    private static final String TAG = "TimeSyncService";
+    private static final Integer ALARM_SERVICE_CODE = 23145;
+    private static final String TAG = TimesSyncService.class.getName();
 
     private UserAccount account;
     private SmartStore smartStore;
     private SyncManager syncMgr;
+    private AlarmManager alarmMgr;
 
     public TimesSyncService() {
-        super("TimesSyncService");
+        super(TimesSyncService.class.getName());
         account = SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser();
         smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);
         syncMgr = SyncManager.getInstance(account);
@@ -42,7 +51,13 @@ public class TimesSyncService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        syncUp(intent);
+
+        if(Utils.isInternetAvailable(getApplicationContext())) {
+            this.syncUp(intent);
+        }else {
+            showSnackbar("You are offline we will try to sync later");
+            startSyncAlarmService();
+        }
     }
 
     /**
@@ -65,9 +80,14 @@ public class TimesSyncService extends IntentService {
 
             @Override
             public void onUpdate(SyncState sync) {
-                if (SyncState.Status.DONE.equals(sync.getStatus())) {
-                    syncDown();
-                    Log.d(TAG, "UPLOAD COMPLITED");
+
+                if (sync.getStatus().equals(SyncState.Status.DONE)) {
+                    stopSyncAlarmService();
+                    showSnackbar("Times uploaded to SalesForce");
+                    TimesSyncService.this.syncDown();
+                }else if(sync.getStatus().equals(SyncState.Status.FAILED)){
+                    showSnackbar("Something went wrong we will try to sync later");
+                    startSyncAlarmService();
                 }
             }
         };
@@ -85,18 +105,18 @@ public class TimesSyncService extends IntentService {
      * Pulls the latest records from the server.
      */
     public synchronized void syncDown() {
+
         final SyncManager.SyncUpdateCallback callback = new SyncManager.SyncUpdateCallback() {
 
             @Override
             public void onUpdate(SyncState sync) {
                 if (SyncState.Status.DONE.equals(sync.getStatus())) {
-                    Log.d(TAG, "DOWNLOAD COMPLITED");
+                    showSnackbar("Sync with SalesForce is completed");
                 }
             }
         };
         try {
             final SyncOptions options = SyncOptions.optionsForSyncDown(SyncState.MergeMode.OVERWRITE);
-            // IMPORTANT
             final String soqlQuery = SOQLBuilder.getInstanceWithFields(TimeObject.TIME_FIELDS_SYNC_DOWN)
                     .from(TimeObject.TIME_SF_OBJECT)
                     .where(TimeObject.buildWhereRequest())
@@ -110,5 +130,28 @@ public class TimesSyncService extends IntentService {
         }
     }
 
+    private void startSyncAlarmService(){
+        alarmMgr = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
 
+        Intent startTimeSyncService = new Intent(getApplicationContext(), TaskSyncAlarmReceiver.class);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(getApplicationContext(), ALARM_SERVICE_CODE, startTimeSyncService, 0);
+
+        alarmMgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                30 * 1000,
+                30 * 1000,
+                alarmIntent);
+    }
+
+    private void stopSyncAlarmService(){
+        alarmMgr = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        Intent startTimeSyncService = new Intent(getApplicationContext(), TaskSyncAlarmReceiver.class);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(getApplicationContext(), ALARM_SERVICE_CODE, startTimeSyncService, 0);
+        alarmMgr.cancel(alarmIntent);
+    }
+
+    private void showSnackbar (String message){
+        Intent intent = new Intent(OrderDetailsActivity.SYNC_BROADCAST_NAME_DETAILS);
+        intent.putExtra(OrderDetailsActivity.SYNC_BROADCAST_MESSAGE_KEY_DETAILS, message);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
 }

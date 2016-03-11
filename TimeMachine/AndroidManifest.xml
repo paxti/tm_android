@@ -32,9 +32,13 @@
         <service
             android:name=".services.OrdersSyncService"
             android:exported="false" />
+
         <service
             android:name=".services.TimesSyncService"
             android:exported="false" />
+
+        <receiver android:name=".broadcast.TaskSyncAlarmReceiver"
+            android:enabled="true" />
 
         <!-- Launcher screen -->
         <activity

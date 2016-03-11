@@ -25,14 +25,23 @@ public class TimeObject extends SalesforceObject {
 
     public static final String ORDER = "order__c";
     public static final String NOTE = "note__c";
+    public static final String PHASE = "phase__c";
     public static final String START_TIME = "startTime__c";
     public static final String END_TIME = "endTime__c";
+
+    public static final String OBJECT_TYPE_KEY = "type";
+    public static final String ATTRIBUTES = "attributes";
     public static final String LOCAL = "__local__";
+    public static final String LOCALY_CREATED = "__locally_created__";
+    public static final String LOCALY_UPDATED = "__locally_updated__";
+    public static final String LOCALY_DELETED = "__locally_deleted__";
+
 
 
     public static IndexSpec[] TIMES_INDEX_SPEC = {
-            new IndexSpec("Id", SmartStore.Type.string),
+            new IndexSpec(Constants.ID, SmartStore.Type.string),
             new IndexSpec(ORDER, SmartStore.Type.string),
+            new IndexSpec(PHASE, SmartStore.Type.string),
             new IndexSpec(NOTE, SmartStore.Type.string),
             new IndexSpec(START_TIME, SmartStore.Type.string),
             new IndexSpec(END_TIME, SmartStore.Type.string),
@@ -41,12 +50,14 @@ public class TimeObject extends SalesforceObject {
 
     public static final String[] TIME_FIELDS_SYNC_UP = {
             ORDER,
+            PHASE,
             NOTE,
             START_TIME,
             END_TIME,
     };
 
     public static final String[] TIME_FIELDS_UPDATE = {
+            PHASE,
             NOTE,
             START_TIME,
             END_TIME,
@@ -54,6 +65,7 @@ public class TimeObject extends SalesforceObject {
 
     public static final String[] TIME_FIELDS_SYNC_DOWN = {
             Constants.ID,
+            PHASE,
             ORDER,
             NOTE,
             START_TIME,
@@ -105,29 +117,30 @@ public class TimeObject extends SalesforceObject {
                 "'";
     }
 
-    public static JSONObject createTimeObjectStartedNow(String orderId) throws JSONException{
+    public static JSONObject createTimeObjectStartedNow(String orderId, String phase) throws JSONException{
         JSONObject object = new JSONObject();
 
         JSONObject additionalInfo = new JSONObject();
+        additionalInfo.put(OBJECT_TYPE_KEY, TIME_SF_OBJECT);
 
-
-        additionalInfo.put("type", TIME_SF_OBJECT);
-        object.put("Id", String.valueOf(System.currentTimeMillis()));
+        object.put(Constants.ID, String.valueOf(System.currentTimeMillis()));
         object.put(START_TIME, Utils.getCurrentTimeInSfFormat());
         object.put(ORDER, orderId);
-        object.put("__local__", true);
-        object.put("__locally_created__", true);
-        object.put("__locally_updated__", false);
-        object.put("__locally_deleted__", false);
-        object.put("attributes", additionalInfo);
+        object.put(PHASE, phase);
+        object.put(LOCAL, true);
+        object.put(LOCALY_CREATED, true);
+        object.put(LOCALY_UPDATED, false);
+        object.put(LOCALY_DELETED, false);
+        object.put(ATTRIBUTES, additionalInfo);
 
         return object;
     }
 
+
     public static JSONObject createTimeObjectStopedNow(JSONObject object) throws JSONException {
         object.put(TimeObject.END_TIME, Utils.getCurrentTimeInSfFormat());
-        object.put("__local__", true);
-        object.put("__locally_updated__", true);
+        object.put(LOCAL, true);
+        object.put(LOCALY_UPDATED, true);
 
         return object;
     }

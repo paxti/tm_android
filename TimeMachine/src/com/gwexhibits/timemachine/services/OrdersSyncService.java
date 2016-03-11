@@ -4,9 +4,12 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.gwexhibits.timemachine.OrderDetailsActivity;
+import com.gwexhibits.timemachine.SearchActivity;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.salesforce.androidsdk.accounts.UserAccount;
 import com.salesforce.androidsdk.smartstore.store.SmartStore;
@@ -26,7 +29,7 @@ import org.json.JSONException;
 public class OrdersSyncService extends IntentService {
 
     private static final Integer LIMIT = 10000;
-    private static final String TAG = "OrderSyncService";
+    private static final String TAG = OrdersSyncService.class.getName();
 
 
     private UserAccount account;
@@ -38,7 +41,7 @@ public class OrdersSyncService extends IntentService {
      *
      */
     public OrdersSyncService() {
-        super("OrdersSyncService");
+        super(OrdersSyncService.class.getName());
         account = SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser();
         smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);
         syncMgr = SyncManager.getInstance(account);
@@ -46,7 +49,7 @@ public class OrdersSyncService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        syncDown();
+        this.syncDown();
     }
 
     public synchronized void syncDown() {
@@ -55,15 +58,11 @@ public class OrdersSyncService extends IntentService {
 
             @Override
             public void onUpdate(SyncState sync) {
-                Handler handler = new Handler(Looper.getMainLooper());
-
-                handler.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        Toast.makeText(OrdersSyncService.this.getApplicationContext(), "Updating data", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                if(SyncState.Status.DONE.equals(sync.getStatus())){
+                    showSnackbar("Orders are up to date");
+                }else if(SyncState.Status.FAILED.equals(sync.getStatus())){
+                    showSnackbar("Something went wrong we will try to sync later");
+                }
             }
         };
 
@@ -79,6 +78,12 @@ public class OrdersSyncService extends IntentService {
         } catch (SyncManager.SmartSyncException e) {
             Log.e(TAG, "SmartSyncException occurred while attempting to sync down", e);
         }
+    }
+
+    private void showSnackbar (String message){
+        Intent intent = new Intent(SearchActivity.SYNC_BROADCAST_NAME_SEARCH);
+        intent.putExtra(SearchActivity.SYNC_BROADCAST_MESSAGE_KEY_SEARCH, message);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
 }

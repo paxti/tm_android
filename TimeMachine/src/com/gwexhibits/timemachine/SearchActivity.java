@@ -1,14 +1,21 @@
 package com.gwexhibits.timemachine;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 
 import com.gwexhibits.timemachine.listeners.SearchBarListener;
 import com.gwexhibits.timemachine.services.OrdersSyncService;
+import com.gwexhibits.timemachine.utils.Utils;
 import com.quinny898.library.persistentsearch.SearchBox;
 import com.salesforce.androidsdk.accounts.UserAccountManager;
 import com.salesforce.androidsdk.app.SalesforceSDKManager;
@@ -28,8 +35,12 @@ public class SearchActivity extends AppCompatActivity{
     private PasscodeManager passcodeManager;
     private UserSwitchReceiver userSwitchReceiver;
 
+    public static final String SYNC_BROADCAST_NAME_SEARCH = "detailsBroadcastSearch";
+    public static final String SYNC_BROADCAST_MESSAGE_KEY_SEARCH = "sync_message_search";
+
     private RestClient client;
 
+    @Bind(R.id.main_relative) RelativeLayout relativeLayout;
     @Bind(R.id.searchbox) SearchBox search;
 
     @Override
@@ -80,6 +91,13 @@ public class SearchActivity extends AppCompatActivity{
                 }
             });
         }
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(syncMessageReceiver, new IntentFilter(SYNC_BROADCAST_NAME_SEARCH));
+        if (Utils.isCurrentTaskRunning(this)){
+            Intent showOrderDetails = new Intent(SearchActivity.this, OrderDetailsActivity.class);
+            showOrderDetails.putExtra(OrderDetailsActivity.ORDER_KEY, String.valueOf(Utils.getCurrentOrder(this)));
+            this.startActivity(showOrderDetails);
+        }
     }
 
     public void onResume(RestClient client) {
@@ -95,6 +113,7 @@ public class SearchActivity extends AppCompatActivity{
     public void onPause() {
         super.onPause();
         passcodeManager.onPause(this);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(syncMessageReceiver);
     }
 
     @Override
@@ -143,6 +162,13 @@ public class SearchActivity extends AppCompatActivity{
             refreshIfUserSwitched();
         }
     }
+
+    private BroadcastReceiver syncMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Utils.showSnackbar(intent, relativeLayout, SYNC_BROADCAST_MESSAGE_KEY_SEARCH);
+        }
+    };
 
     @OnClick(R.id.button)
      public void sayHi(Button button) {

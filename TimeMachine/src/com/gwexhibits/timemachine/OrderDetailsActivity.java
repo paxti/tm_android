@@ -1,12 +1,16 @@
 package com.gwexhibits.timemachine;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
@@ -18,6 +22,7 @@ import com.gwexhibits.timemachine.cards.OrderDetailsSections;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.cards.TaskStatusCard;
 import com.gwexhibits.timemachine.objects.sf.TimeObject;
+import com.gwexhibits.timemachine.services.TimesSyncService;
 import com.gwexhibits.timemachine.utils.Utils;
 import com.salesforce.androidsdk.smartstore.store.SmartStore;
 import com.salesforce.androidsdk.smartsync.util.Constants;
@@ -28,6 +33,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import butterknife.Bind;
+import butterknife.BindString;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import it.gmariotti.cardslib.library.internal.Card;
@@ -42,13 +48,19 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     public static final String ORDER_KEY = "order";
     public static final String PHASE_KEY = "phase";
 
+    public static final String SYNC_BROADCAST_NAME_DETAILS = "detailsBroadcastDetails";
+    public static final String SYNC_BROADCAST_MESSAGE_KEY_DETAILS = "sync_message_details";
+
+    @BindString(R.string.sfid_title) String sfidTitle;
+
+    @Bind(R.id.coordinator) CoordinatorLayout coordinatorLayout;
     @Bind(R.id.toolbar_layout) CollapsingToolbarLayout collapsingToolbar;
     @Bind(R.id.subtitle) TextView subtitle;
     @Bind(R.id.start_new_task) FloatingActionButton startNewTaskButton;
     @Bind(R.id.cards_recyclerview) CardRecyclerView recyclerView;
 
     private JSONObject currentOrder;
-    private String stage = "";
+    private String phase = "";
     private ArrayList<Card> cards = new ArrayList<>();
     private CardArrayRecyclerViewAdapter cardArrayAdapter;
 
@@ -79,15 +91,21 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
         super.onResume();
         SharedPreferences sharedPreferences = getSharedPreferences(Utils.PREFS_NAME, Context.MODE_PRIVATE);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+        LocalBroadcastManager.getInstance(this).registerReceiver(syncMessageReceiver, new IntentFilter(SYNC_BROADCAST_NAME_DETAILS));
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(syncMessageReceiver);
     }
 
     private void setPassedData(){
         try {
             currentOrder = new JSONObject(getIntent().getStringExtra(ORDER_KEY));
-            stage = getIntent().getStringExtra(PHASE_KEY);
+            phase = getIntent().getStringExtra(PHASE_KEY);
         } catch (JSONException e) {
-            //TODO: Add message
-            e.printStackTrace();
+            Utils.showSnackbar(coordinatorLayout, "Can't get information about this order");
         }
     }
 
@@ -102,12 +120,11 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
                 sfid = currentOrder.getString(OrderObject.SFID);
                 show = android.text.Html.fromHtml(currentOrder.getString(OrderObject.SHOW_NAME)).toString();
             } catch (JSONException e) {
-                // TODO: Add message
-                e.printStackTrace();
+                Utils.showSnackbar(coordinatorLayout, "Couldn't output order information");
             }
         }
 
-        collapsingToolbar.setTitle(this.getResources().getString(R.string.sfid_title) + sfid);
+        collapsingToolbar.setTitle(sfidTitle + sfid);
         subtitle.setText(account + "@" + show);
     }
 
@@ -140,13 +157,12 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     @OnClick(R.id.start_new_task)
     public void startTask(View view) {
         try {
-            JSONObject newTaskEntry = TimeObject.createTimeObjectStartedNow(currentOrder.getString(Constants.ID));
+            JSONObject newTaskEntry = TimeObject.createTimeObjectStartedNow(currentOrder.getString(Constants.ID), phase);
             JSONObject createdTaskEntry = Utils.saveToSmartStore(TimeObject.TIME_SUPE, newTaskEntry);
             Utils.addCurrentTask(this, createdTaskEntry.getString(SmartStore.SOUP_ENTRY_ID));
             Utils.addCurrentOrder(this, currentOrder);
         } catch (JSONException e) {
-            e.printStackTrace();
-            Log.e("Error", e.getMessage());
+            Utils.showSnackbar(coordinatorLayout, "Wasn't able to create task");
         }
     }
 
@@ -188,8 +204,17 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
                 hideStartNewTaskButton();
             }else{
                 showStartNewTaskButton();
+
+                Intent mServiceIntent = new Intent(getApplicationContext(), TimesSyncService.class);
+                startService(mServiceIntent);
             }
         }
     }
 
+    private BroadcastReceiver syncMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Utils.showSnackbar(intent, coordinatorLayout, SYNC_BROADCAST_MESSAGE_KEY_DETAILS);
+        }
+    };
 }

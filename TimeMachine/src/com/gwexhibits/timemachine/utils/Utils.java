@@ -1,13 +1,18 @@
 package com.gwexhibits.timemachine.utils;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.design.widget.Snackbar;
+import android.view.View;
 
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.objects.sf.TimeObject;
+import com.gwexhibits.timemachine.services.OrdersSyncService;
 import com.salesforce.androidsdk.accounts.UserAccount;
+import com.salesforce.androidsdk.app.SalesforceSDKManager;
 import com.salesforce.androidsdk.smartstore.store.SmartStore;
 import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
 
@@ -125,5 +130,15 @@ public class Utils {
         smartStore.update(TimeObject.TIME_SUPE, entry, taskId);
 
         Utils.removeCurrentTaskAndOrder(context);
+    }
+
+    public static void showSnackbar(View view, String message){
+        Snackbar snackbar = Snackbar.make(view, message, Snackbar.LENGTH_LONG);
+        snackbar.show();
+    }
+
+    public static void showSnackbar(Intent intent, View view, String messageKey){
+        String message = intent.getStringExtra(messageKey);
+        Utils.showSnackbar(view, message);
     }
 }
