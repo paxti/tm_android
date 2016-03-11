@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Build;
 import android.support.annotation.Nullable;
 import android.text.Html;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -26,7 +27,7 @@ import it.gmariotti.cardslib.library.prototypes.CardWithList;
 public class OrderDetailsSections extends CardWithList {
 
     @Nullable @Bind(R.id.title) TextView cardTitle;
-    @Nullable @Bind(R.id.description) TextView description;
+    @Nullable @Bind(R.id.details_entry_value) TextView details_description;
     @Nullable @Bind(R.id.action) ImageView actionIcon;
     @Nullable @Bind(R.id.icon) ImageView icon;
 
@@ -96,13 +97,13 @@ public class OrderDetailsSections extends CardWithList {
         ButterKnife.bind(this, convertView);
 
         cardTitle.setText(((OrderDetailsItem) object).getFieldName());
-        description.setText(Html.fromHtml(((OrderDetailsItem) object).getFieldValue()));
+        details_description.setText(Html.fromHtml(((OrderDetailsItem) object).getFieldValue()));
 
         if(childPosition != 0){
             icon.setVisibility(View.INVISIBLE);
         }
 
-        if(iconResourceId < 0) {
+/*        if(iconResourceId < 0) {
             icon.setVisibility(View.GONE);
             actionIcon.setVisibility(View.GONE);
         }else{
@@ -111,7 +112,7 @@ public class OrderDetailsSections extends CardWithList {
             }else{
                 icon.setImageDrawable(context.getResources().getDrawable(iconResourceId));
             }
-        }
+        }*/
 
         return convertView;
     }

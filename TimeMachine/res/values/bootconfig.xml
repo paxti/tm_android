@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <resources>
-    <string name="remoteAccessConsumerKey">3MVG9_7ddP9KqTzepyl_c5OoLu8iyL7WNTPHXT4IvCmNqfjs69LOOrygjUCp7ON7JQ84MhjBbAm2FuIsTG98x</string>
+    <!--<string name="remoteAccessConsumerKey">3MVG9_7ddP9KqTzepyl_c5OoLu8iyL7WNTPHXT4IvCmNqfjs69LOOrygjUCp7ON7JQ84MhjBbAm2FuIsTG98x</string>-->
+    <string name="remoteAccessConsumerKey">3MVG9rFJvQRVOvk6XfFjbZdIHMIFcKibRk1vlnp.l_mtEQn5UwlwoU1zd6zGVB1__E8c33QlpsxmuVdpo6rl4</string>
     <string name="oauthRedirectURI">testsfdc:///mobilesdk/detect/oauth/done</string>
     <string-array name="oauthScopes">
         <item>api</item>

@@ -50,7 +50,7 @@ public class TaskStatusCard extends Card {
         title = (TextView) parent.findViewById(R.id.task_status_title);
         title.setText(context.getText(R.string.order_status_card_title));
 
-        details = (TextView) parent.findViewById(R.id.details);
+        details = (TextView) parent.findViewById(R.id.task_status_details);
         details.setText(context.getText(R.string.current_task_running_for));
     }
 

@@ -43,26 +43,26 @@
                 tools:text="@string/placeholder_session_title" />
 
             <TextView
-                android:id="@+id/description"
+                android:id="@+id/details_entry_value"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:layout_marginEnd="8dp"
                 android:layout_marginRight="8dp"
+                android:textColor="@color/secondary_text"
                 android:textSize="@dimen/text_size_medium"
                 tools:text="9:00 AM - 11:30 AM / Room 1"
                 style="@style/Body1Text" />
 
             <TextView
-                android:id="@+id/details"
+                android:id="@+id/detals"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:layout_marginTop="10dp"
                 android:text="@string/secondary_text"
                 android:textColor="@color/secondary_text"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                android:visibility="gone" />
 
 
         </LinearLayout>
@@ -75,7 +75,8 @@
             android:layout_gravity="center"
             android:contentDescription="@null"
             android:tint="@color/accent"
-            android:src="@drawable/ic_warning" />
+            android:src="@drawable/ic_warning"
+            android:visibility="invisible" />
 
     </LinearLayout>
 
