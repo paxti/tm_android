@@ -150,8 +150,8 @@ public class TimesSyncService extends IntentService {
     }
 
     private void showSnackbar (String message){
-        Intent intent = new Intent(OrderDetailsActivity.SYNC_BROADCAST_NAME_DETAILS);
-        intent.putExtra(OrderDetailsActivity.SYNC_BROADCAST_MESSAGE_KEY_DETAILS, message);
+        Intent intent = new Intent(Utils.SYNC_BROADCAST_NAME);
+        intent.putExtra(Utils.SYNC_BROADCAST_MESSAGE_KEY, message);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 }

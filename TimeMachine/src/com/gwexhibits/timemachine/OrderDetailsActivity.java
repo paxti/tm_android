@@ -48,9 +48,6 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     public static final String ORDER_KEY = "order";
     public static final String PHASE_KEY = "phase";
 
-    public static final String SYNC_BROADCAST_NAME_DETAILS = "detailsBroadcastDetails";
-    public static final String SYNC_BROADCAST_MESSAGE_KEY_DETAILS = "sync_message_details";
-
     @BindString(R.string.sfid_title) String sfidTitle;
 
     @Bind(R.id.coordinator) CoordinatorLayout coordinatorLayout;
@@ -91,7 +88,7 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
         super.onResume();
         SharedPreferences sharedPreferences = getSharedPreferences(Utils.PREFS_NAME, Context.MODE_PRIVATE);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-        LocalBroadcastManager.getInstance(this).registerReceiver(syncMessageReceiver, new IntentFilter(SYNC_BROADCAST_NAME_DETAILS));
+        LocalBroadcastManager.getInstance(this).registerReceiver(syncMessageReceiver, new IntentFilter(Utils.SYNC_BROADCAST_NAME));
     }
 
     @Override
@@ -214,7 +211,7 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     private BroadcastReceiver syncMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Utils.showSnackbar(intent, coordinatorLayout, SYNC_BROADCAST_MESSAGE_KEY_DETAILS);
+            Utils.showSnackbar(intent, coordinatorLayout, Utils.SYNC_BROADCAST_MESSAGE_KEY);
         }
     };
 }

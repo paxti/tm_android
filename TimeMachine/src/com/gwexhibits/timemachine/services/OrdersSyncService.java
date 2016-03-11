@@ -11,6 +11,7 @@ import android.widget.Toast;
 import com.gwexhibits.timemachine.OrderDetailsActivity;
 import com.gwexhibits.timemachine.SearchActivity;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
+import com.gwexhibits.timemachine.utils.Utils;
 import com.salesforce.androidsdk.accounts.UserAccount;
 import com.salesforce.androidsdk.smartstore.store.SmartStore;
 import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
@@ -81,8 +82,8 @@ public class OrdersSyncService extends IntentService {
     }
 
     private void showSnackbar (String message){
-        Intent intent = new Intent(SearchActivity.SYNC_BROADCAST_NAME_SEARCH);
-        intent.putExtra(SearchActivity.SYNC_BROADCAST_MESSAGE_KEY_SEARCH, message);
+        Intent intent = new Intent(Utils.SYNC_BROADCAST_NAME);
+        intent.putExtra(Utils.SYNC_BROADCAST_MESSAGE_KEY, message);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 

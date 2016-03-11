@@ -5,14 +5,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
+import android.util.Log;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 
+import com.baoyz.widget.PullRefreshLayout;
 import com.gwexhibits.timemachine.listeners.SearchBarListener;
 import com.gwexhibits.timemachine.services.OrdersSyncService;
 import com.gwexhibits.timemachine.utils.Utils;
@@ -35,11 +40,9 @@ public class SearchActivity extends AppCompatActivity{
     private PasscodeManager passcodeManager;
     private UserSwitchReceiver userSwitchReceiver;
 
-    public static final String SYNC_BROADCAST_NAME_SEARCH = "detailsBroadcastSearch";
-    public static final String SYNC_BROADCAST_MESSAGE_KEY_SEARCH = "sync_message_search";
-
     private RestClient client;
 
+    @Bind(R.id.swipeRefreshLayout) PullRefreshLayout swipeRefreshLayout;
     @Bind(R.id.main_relative) RelativeLayout relativeLayout;
     @Bind(R.id.searchbox) SearchBox search;
 
@@ -58,6 +61,15 @@ public class SearchActivity extends AppCompatActivity{
         setContentView(R.layout.activity_search);
         ButterKnife.bind(this);
 
+        swipeRefreshLayout.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                swipeRefreshLayout.setRefreshing(true);
+                Intent mServiceIntent = new Intent(getApplicationContext(), OrdersSyncService.class);
+                startService(mServiceIntent);
+            }
+        });
+        swipeRefreshLayout.setRefreshStyle(PullRefreshLayout.STYLE_MATERIAL);
         search.setInputType(InputType.TYPE_CLASS_NUMBER);
         search.setSearchListener(new SearchBarListener(search, this));
         search.setMaxLength(10);
@@ -92,7 +104,8 @@ public class SearchActivity extends AppCompatActivity{
             });
         }
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(syncMessageReceiver, new IntentFilter(SYNC_BROADCAST_NAME_SEARCH));
+        LocalBroadcastManager.getInstance(this).registerReceiver(syncMessageReceiver, new IntentFilter(Utils.SYNC_BROADCAST_NAME));
+
         if (Utils.isCurrentTaskRunning(this)){
             Intent showOrderDetails = new Intent(SearchActivity.this, OrderDetailsActivity.class);
             showOrderDetails.putExtra(OrderDetailsActivity.ORDER_KEY, String.valueOf(Utils.getCurrentOrder(this)));
@@ -166,7 +179,8 @@ public class SearchActivity extends AppCompatActivity{
     private BroadcastReceiver syncMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Utils.showSnackbar(intent, relativeLayout, SYNC_BROADCAST_MESSAGE_KEY_SEARCH);
+            Utils.showSnackbar(intent, relativeLayout, Utils.SYNC_BROADCAST_MESSAGE_KEY);
+            swipeRefreshLayout.setRefreshing(false);
         }
     };
 

@@ -30,6 +30,9 @@ import java.util.TimeZone;
  */
 public class Utils {
 
+    public static final String SYNC_BROADCAST_NAME = "detailsBroadcast";
+    public static final String SYNC_BROADCAST_MESSAGE_KEY = "sync_message";
+
     public static final String PREFS_NAME = "MyPrefsFile";
     public static final String CURRENT_ORDER = "current_order";
     public static final String CURRENT_TASK = "current_task";
