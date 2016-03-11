@@ -94,6 +94,8 @@ public class Utils {
 
     public static String getCurrentTimeInSfFormat(){
         SimpleDateFormat dateFormat = new SimpleDateFormat(SF_FORMAT, Locale.US);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        String date = dateFormat.format(new Date());
         return dateFormat.format(new Date());
     }
 
