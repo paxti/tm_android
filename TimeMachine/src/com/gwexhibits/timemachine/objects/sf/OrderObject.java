@@ -90,6 +90,20 @@ public class OrderObject extends SalesforceObject {
             "RI"
     };
 
+    public static final String[] LIST_OF_STAGE_R_R = {
+            "Assessment",
+            "Fulfillment"
+    };
+
+    public static final String[] LIST_OF_STAGE_SOS = {
+            "SOS"
+    };
+
+    public static final String[] LIST_OF_STAGE_CUSTOM_FAB = {
+            "Custom Fab"
+    };
+
+
     private boolean isLocallyModified;
 
 
@@ -141,13 +155,13 @@ public class OrderObject extends SalesforceObject {
 
         switch (type){
             case "Workorder":
-                return new String[]{"Pre-Stage", "RI", "I&D"};
+                return LIST_OF_STAGES_WORKORDER;
             case "SoS":
-                return new String[]{"Sos"};
+                return LIST_OF_STAGE_SOS;
             case "R&R":
-                return new String[]{"Assessment", "Fulfilment"};
+                return LIST_OF_STAGE_R_R;
             case "Custom Fab Request":
-                return new String[]{"Custom Fab Request"};
+                return LIST_OF_STAGE_CUSTOM_FAB;
             default:
                 return new String[]{"Wrong type"};
         }
