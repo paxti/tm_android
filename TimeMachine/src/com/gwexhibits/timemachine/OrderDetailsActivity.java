@@ -1,5 +1,8 @@
 package com.gwexhibits.timemachine;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,8 +15,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.LinearLayoutManager;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -49,6 +52,10 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     public static final String PHASE_KEY = "phase";
 
     @BindString(R.string.sfid_title) String sfidTitle;
+    @BindString(R.string.app_name) String appName;
+    @BindString(R.string.notification_subject) String notificationSubject;
+    @BindString(R.string.notication_go_to_order) String notificationGoToOrder;
+    @BindString(R.string.notification_stop) String notificationStop;
 
     @Bind(R.id.coordinator) CoordinatorLayout coordinatorLayout;
     @Bind(R.id.toolbar_layout) CollapsingToolbarLayout collapsingToolbar;
@@ -158,6 +165,26 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
             JSONObject createdTaskEntry = Utils.saveToSmartStore(TimeObject.TIME_SUPE, newTaskEntry);
             Utils.addCurrentTask(this, createdTaskEntry.getString(SmartStore.SOUP_ENTRY_ID));
             Utils.addCurrentOrder(this, currentOrder);
+
+            Intent intent = new Intent(this, OrderDetailsActivity.class);
+            intent.putExtra(ORDER_KEY, currentOrder.toString());
+            PendingIntent pIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, 0);
+
+
+            Notification n  = new NotificationCompat.Builder(this)
+                    .setContentTitle(appName)
+                    .setContentText(notificationSubject)
+                    .setSmallIcon(R.drawable.sf__icon)
+                    .setContentIntent(pIntent)
+                    .setAutoCancel(false)
+                    .addAction(R.drawable.ic_event_available_white_36dp, notificationStop, pIntent)
+                    .build();
+
+            NotificationManager notificationManager =
+                    (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+            notificationManager.notify(0, n);
+
         } catch (JSONException e) {
             Utils.showSnackbar(coordinatorLayout, "Wasn't able to create task");
         }

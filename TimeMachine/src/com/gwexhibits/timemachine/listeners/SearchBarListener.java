@@ -13,6 +13,7 @@ import com.gwexhibits.timemachine.R;
 import com.gwexhibits.timemachine.fragments.StagePopUp;
 import com.gwexhibits.timemachine.objects.OrderDetails;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
+import com.gwexhibits.timemachine.objects.sf.TimeObject;
 import com.gwexhibits.timemachine.utils.Utils;
 import com.quinny898.library.persistentsearch.SearchBox;
 import com.quinny898.library.persistentsearch.SearchResult;
@@ -41,12 +42,14 @@ public class SearchBarListener implements SearchBox.SearchListener {
     public SearchBarListener(SearchBox search, Context context){
         searchBox = search;
         account = SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser();
-        smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);
         this.context = context;
     }
 
     @Override
     public void onSearchOpened() {
+        smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);
+        smartStore.registerSoup(TimeObject.TIME_SUPE, TimeObject.TIMES_INDEX_SPEC);
+        smartStore.registerSoup(OrderObject.ORDER_SUPE, OrderObject.ORDERS_INDEX_SPEC);
     }
 
     @Override

@@ -31,4 +31,9 @@
     <string name="times_uploaded_to_sf">Times uploaded to SalesForce</string>
     <string name="sync_with_sf_complited">Sync with SalesForce is completed</string>
 
+    <!--Notifications-->
+    <string name="notification_subject">You have running task</string>
+    <string name="notification_stop">Stop task</string>
+    <string name="notication_go_to_order">Go to order</string>
+
 </resources>
