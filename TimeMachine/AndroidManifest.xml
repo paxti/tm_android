@@ -32,12 +32,15 @@
         <service
             android:name=".services.OrdersSyncService"
             android:exported="false" />
-
         <service
             android:name=".services.TimesSyncService"
             android:exported="false" />
 
-        <receiver android:name=".broadcast.TaskSyncAlarmReceiver"
+        <receiver
+            android:name=".broadcast.TaskSyncAlarmReceiver"
+            android:enabled="true" />
+        <receiver
+            android:name=".broadcast.NotificationReceiver"
             android:enabled="true" />
 
         <!-- Launcher screen -->
@@ -55,9 +58,18 @@
         <activity
             android:name=".OrderDetailsActivity"
             android:label="@string/title_activity_order_details"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar"></activity>
 
+        <!-- This service is only used on devices with API v17+ -->
+        <service
+            android:name="drawable.MyDaydreamService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.dreams.DreamService" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

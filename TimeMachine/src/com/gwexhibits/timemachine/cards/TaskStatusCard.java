@@ -7,6 +7,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.gwexhibits.timemachine.R;
+import com.gwexhibits.timemachine.utils.NotificationHelper;
 import com.gwexhibits.timemachine.utils.Utils;
 
 import org.json.JSONException;
@@ -41,6 +42,7 @@ public class TaskStatusCard extends Card {
             public void onClick(View v) {
                 try {
                     Utils.stopCurrentTask(context, "My best note ever");
+                    NotificationHelper.stopNotification(context);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

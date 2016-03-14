@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <!--General-->
     <string name="account_type">com.gwexhibits.timemachine.login</string>
-    <string name="app_name"><b>TimeMachine</b></string>
+    <string name="app_name">TimeMachine</string>
     <string name="app_package">com.gwexhibits.timemachine</string>
     <string name="error_message">Something went wrong</string>
     <string name="empty"></string>
@@ -35,5 +35,10 @@
     <string name="notification_subject">You have running task</string>
     <string name="notification_stop">Stop task</string>
     <string name="notication_go_to_order">Go to order</string>
+    <string name="notification_default_note">Stopped from Notification bar</string>
+    <string name="notification_sfid">Task is assigned to order SFID: %1$s</string>
+    <string name="notification_client">for %1$s</string>
+    <string name="notification_show">in %1$s</string>
+    <string name="notification_duration">Task is running for about %1$s!h</string>
 
 </resources>
