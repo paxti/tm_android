@@ -92,8 +92,10 @@ public class OrderDetails {
 
         for (String fieldKey: fields.keySet()){
             try {
-                section.addItem(new OrderDetailsItem(fields.get(fieldKey),
+                if( !Utils.getStringValue(dbObject, fieldKey).equals("null")){
+                    section.addItem(new OrderDetailsItem(fields.get(fieldKey),
                         Utils.getStringValue(dbObject, fieldKey)));
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
