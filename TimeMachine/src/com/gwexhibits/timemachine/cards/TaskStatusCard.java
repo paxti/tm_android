@@ -66,6 +66,7 @@ public class TaskStatusCard extends Card {
         stopTask = (Button) parent.findViewById(R.id.stop_task);
         addNote = (Button) parent.findViewById(R.id.add_note);
         addNote.setVisibility(View.INVISIBLE);
+        stopTask.setVisibility(View.VISIBLE);
 
         stopTask.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,6 +91,7 @@ public class TaskStatusCard extends Card {
                         InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(mInnerView.getWindowToken(), 0);
                     }
+                    stopTask.setVisibility(View.VISIBLE);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -109,6 +111,7 @@ public class TaskStatusCard extends Card {
 
             @Override
             public void afterTextChanged(Editable s) {
+                stopTask.setVisibility(View.INVISIBLE);
                 addNote.setVisibility(View.VISIBLE);
             }
         });

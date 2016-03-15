@@ -25,9 +25,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/add_note"
+            android:theme="@style/ColoredButtonGreen"
             android:layout_alignParentBottom="true"
-            android:layout_toStartOf="@+id/stop_task"
-            android:theme="@style/ColoredButtonGreen" />
+            android:layout_alignParentEnd="true" />
 
         <TextView
             android:id="@+id/task_status_title"
