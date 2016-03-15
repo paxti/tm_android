@@ -37,6 +37,7 @@
                 android:id="@+id/button2"
                 android:layout_below="@+id/searchbox"
                 android:layout_alignParentEnd="true"
-                android:layout_marginTop="169dp" />
+                android:layout_marginTop="169dp"
+                android:visibility="invisible" />
         </RelativeLayout>
 </com.baoyz.widget.PullRefreshLayout>
