@@ -60,7 +60,6 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     @Bind(R.id.cards_recyclerview) CardRecyclerView recyclerView;
 
     private JSONObject currentOrder;
-    private String phase = "";
     private ArrayList<Card> cards = new ArrayList<>();
     private CardArrayRecyclerViewAdapter cardArrayAdapter;
 
@@ -101,9 +100,13 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     }
 
     private void setPassedData(){
+        int u =1;
         try {
             currentOrder = new JSONObject(getIntent().getStringExtra(ORDER_KEY));
-            phase = getIntent().getStringExtra(PHASE_KEY);
+            if(getIntent().getStringExtra(PHASE_KEY) != null) {
+                currentOrder.put(TimeObject.PHASE, getIntent().getStringExtra(PHASE_KEY));
+            }
+            int t = 0;
         } catch (JSONException e) {
             Utils.showSnackbar(coordinatorLayout, "Can't get information about this order");
         }
@@ -157,7 +160,10 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     @OnClick(R.id.start_new_task)
     public void startTask(View view) {
         try {
-            JSONObject newTaskEntry = TimeObject.createTimeObjectStartedNow(currentOrder.getString(Constants.ID), phase);
+            JSONObject newTaskEntry = TimeObject.createTimeObjectStartedNow(
+                    currentOrder.getString(Constants.ID),
+                    currentOrder.getString(TimeObject.PHASE));
+
             JSONObject createdTaskEntry = Utils.saveToSmartStore(TimeObject.TIME_SUPE, newTaskEntry);
 
             Utils.addCurrentTask(this, createdTaskEntry.getString(SmartStore.SOUP_ENTRY_ID));

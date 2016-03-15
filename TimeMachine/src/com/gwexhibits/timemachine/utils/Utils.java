@@ -137,6 +137,17 @@ public class Utils {
         Utils.removeCurrentTaskAndOrder(context);
     }
 
+    public static void updateNote(Context context, String note) throws JSONException {
+        UserAccount account = SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser();
+        SmartStore smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);
+
+        Long taskId = Utils.getCurrentTask(context);
+
+        JSONObject entry = smartStore.retrieve(TimeObject.TIME_SUPE, taskId).getJSONObject(0);
+        entry.put(TimeObject.NOTE, note);
+        smartStore.update(TimeObject.TIME_SUPE, entry, taskId);
+    }
+
     public static void showSnackbar(View view, String message){
         Snackbar snackbar = Snackbar.make(view, message, Snackbar.LENGTH_LONG);
         snackbar.show();
