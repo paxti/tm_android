@@ -123,7 +123,7 @@ public class Utils {
         editor.commit();
     }
 
-    public static void stopCurrentTask(Context context, String note) throws JSONException {
+    public static void stopCurrentTask(Context context) throws JSONException {
         UserAccount account = SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser();
         SmartStore smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);
 
@@ -131,7 +131,6 @@ public class Utils {
 
         JSONObject entry = smartStore.retrieve(TimeObject.TIME_SUPE, taskId).getJSONObject(0);
         entry.put(TimeObject.END_TIME, getCurrentTimeInSfFormat());
-        entry.put(TimeObject.NOTE, note);
         smartStore.update(TimeObject.TIME_SUPE, entry, taskId);
 
         Utils.removeCurrentTaskAndOrder(context);

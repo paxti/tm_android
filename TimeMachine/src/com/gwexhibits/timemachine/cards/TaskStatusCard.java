@@ -71,7 +71,7 @@ public class TaskStatusCard extends Card {
             @Override
             public void onClick(View v) {
                 try {
-                    Utils.stopCurrentTask(context, note.getText().toString());
+                    Utils.stopCurrentTask(context);
                     NotificationHelper.stopNotification(context);
                 } catch (JSONException e) {
                     e.printStackTrace();

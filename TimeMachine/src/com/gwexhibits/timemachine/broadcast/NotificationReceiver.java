@@ -17,7 +17,7 @@ public class NotificationReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         try {
-            Utils.stopCurrentTask(context, context.getString(R.string.notification_default_note));
+            Utils.stopCurrentTask(context);
             NotificationHelper.stopNotification(context);
         } catch (JSONException e) {
             e.printStackTrace();
