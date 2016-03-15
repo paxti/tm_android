@@ -137,8 +137,8 @@ public class TimesSyncService extends IntentService {
         PendingIntent alarmIntent = PendingIntent.getBroadcast(getApplicationContext(), ALARM_SERVICE_CODE, startTimeSyncService, 0);
 
         alarmMgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                60 * 1000,
-                60 * 1000,
+                AlarmManager.INTERVAL_HOUR,
+                AlarmManager.INTERVAL_HOUR,
                 alarmIntent);
     }
 
