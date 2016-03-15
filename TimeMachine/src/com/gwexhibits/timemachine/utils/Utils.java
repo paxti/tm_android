@@ -137,6 +137,15 @@ public class Utils {
         Utils.removeCurrentTaskAndOrder(context);
     }
 
+    public static JSONObject getCurrentTimeEntry(Context context) throws JSONException {
+        UserAccount account = SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser();
+        SmartStore smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);
+
+        Long taskId = Utils.getCurrentTask(context);
+
+        return smartStore.retrieve(TimeObject.TIME_SUPE, taskId).getJSONObject(0);
+    }
+
     public static void updateNote(Context context, String note) throws JSONException {
         UserAccount account = SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser();
         SmartStore smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);

@@ -6,7 +6,7 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="110dp"
         android:layout_marginStart="@dimen/padding_normal"
         android:layout_marginEnd="@dimen/padding_normal">
 
@@ -18,15 +18,22 @@
             android:layout_gravity="right"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
-            style="@style/ColoredButton"/>
+            android:theme="@style/ColoredButtonRed"/>
+
+        <Button
+            android:id="@+id/add_note"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_note"
+            android:layout_alignParentBottom="true"
+            android:layout_toStartOf="@+id/stop_task"
+            android:theme="@style/ColoredButtonGreen" />
 
         <TextView
             android:id="@+id/task_status_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="24sp"
-            android:paddingRight="16dp"
-            android:paddingLeft="16dp"
             android:paddingTop="16dp"
             android:text="Medium Text" />
 
@@ -42,7 +49,20 @@
             android:layout_below="@+id/task_status_title"
             android:layout_toStartOf="@+id/stop_task"
             android:layout_alignParentBottom="true"
-            android:visibility="invisible" />
+            android:visibility="invisible"
+            android:layout_alignEnd="@+id/task_status_title" />
+
+        <EditText
+            android:id="@+id/note"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="16dp"
+            android:paddingLeft="16dp"
+            android:maxLength="200"
+            android:layout_below="@+id/task_status_title"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@+id/add_note" />
 
     </RelativeLayout>
 

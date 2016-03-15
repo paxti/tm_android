@@ -34,8 +34,12 @@
         <item name="android:textSize">@dimen/text_size_large</item>
     </style>
 
-    <style name="ColoredButton" parent="Widget.AppCompat.Button.Colored">
+    <style name="ColoredButtonRed" parent="Widget.AppCompat.Button.Colored">
         <item name="colorButtonNormal">@color/accent</item>
+    </style>
+
+    <style name="ColoredButtonGreen" parent="Widget.AppCompat.Button.Colored">
+        <item name="colorButtonNormal">@color/green</item>
     </style>
 
 </resources>

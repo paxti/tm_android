@@ -100,13 +100,11 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     }
 
     private void setPassedData(){
-        int u =1;
         try {
             currentOrder = new JSONObject(getIntent().getStringExtra(ORDER_KEY));
             if(getIntent().getStringExtra(PHASE_KEY) != null) {
                 currentOrder.put(TimeObject.PHASE, getIntent().getStringExtra(PHASE_KEY));
             }
-            int t = 0;
         } catch (JSONException e) {
             Utils.showSnackbar(coordinatorLayout, "Can't get information about this order");
         }
