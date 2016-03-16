@@ -29,6 +29,7 @@ public class OrderObject extends SalesforceObject {
     public static final String CLIENT_NAME = "Account.Name";
     public static final String SHIPPING_DATE = "GOLDEN_Targeted_Shipping_Date__c";
     public static final String INSTRUCTIONS = "Special_Instructions__c";
+    public static final String DROPBOX_LINK = "Dropbox_Link_to_Order_Pictures__c";
 
     public static final String CONFIGURATION_NAME = CONFIGURATION + "Name";
     public static final String CONFIGURATION_TIME_PRE_STAGE = CONFIGURATION + "Estimated_Pre_Stage_Time__c";
@@ -45,6 +46,7 @@ public class OrderObject extends SalesforceObject {
             new IndexSpec(CLIENT_NAME, SmartStore.Type.string),
             new IndexSpec(SHIPPING_DATE, SmartStore.Type.string),
             new IndexSpec(INSTRUCTIONS, SmartStore.Type.string),
+            new IndexSpec(DROPBOX_LINK, SmartStore.Type.string),
             new IndexSpec(CONFIGURATION_NAME, SmartStore.Type.string),
             new IndexSpec(CONFIGURATION_TIME_PRE_STAGE, SmartStore.Type.string),
             new IndexSpec(CONFIGURATION_TIME_UP, SmartStore.Type.string),
@@ -66,6 +68,7 @@ public class OrderObject extends SalesforceObject {
             SHIPPING_DATE,
             CONFIGURATION_TIME_RI,
             INSTRUCTIONS,
+            DROPBOX_LINK,
             Constants.LAST_MODIFIED_DATE
     };
 

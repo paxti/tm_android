@@ -18,7 +18,11 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 
 import com.baoyz.widget.PullRefreshLayout;
+import com.dropbox.client2.DropboxAPI;
+import com.dropbox.client2.android.AndroidAuthSession;
+import com.dropbox.client2.session.AppKeyPair;
 import com.gwexhibits.timemachine.listeners.SearchBarListener;
+import com.gwexhibits.timemachine.services.DropboxService;
 import com.gwexhibits.timemachine.services.OrdersSyncService;
 import com.gwexhibits.timemachine.utils.Utils;
 import com.quinny898.library.persistentsearch.SearchBox;
@@ -41,6 +45,7 @@ public class SearchActivity extends AppCompatActivity{
     private UserSwitchReceiver userSwitchReceiver;
 
     private RestClient client;
+    private DropboxAPI<AndroidAuthSession> mDBApi;
 
     @Bind(R.id.swipeRefreshLayout) PullRefreshLayout swipeRefreshLayout;
     @Bind(R.id.main_relative) RelativeLayout relativeLayout;
@@ -60,6 +65,9 @@ public class SearchActivity extends AppCompatActivity{
 
         setContentView(R.layout.activity_search);
         ButterKnife.bind(this);
+
+        AndroidAuthSession session = buildSession();
+        mDBApi = new DropboxAPI<AndroidAuthSession>(session);
 
         swipeRefreshLayout.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
             @Override
@@ -85,7 +93,7 @@ public class SearchActivity extends AppCompatActivity{
             // Gets login options.
             final String accountType = SalesforceSDKManager.getInstance().getAccountType();
             final ClientManager.LoginOptions loginOptions = SalesforceSDKManager.getInstance().getLoginOptions();
-
+            AndroidAuthSession session = mDBApi.getSession();
             // Gets a rest client.
             new ClientManager(this, accountType, loginOptions,
                     SalesforceSDKManager.getInstance().shouldLogoutWhenTokenRevoked()).getRestClient(this, new ClientManager.RestClientCallback() {
@@ -102,6 +110,17 @@ public class SearchActivity extends AppCompatActivity{
                     EventsObservable.get().notifyEvent(EventsObservable.EventType.RenditionComplete);
                 }
             });
+        }
+
+        if (mDBApi.getSession().authenticationSuccessful()) {
+            try {
+                // Required to complete auth, sets the access token on the session
+                mDBApi.getSession().finishAuthentication();
+
+                Utils.saveDropBoxToken(this, mDBApi.getSession().getOAuth2AccessToken());
+            } catch (IllegalStateException e) {
+                Log.i("DbAuthLog", "Error authenticating", e);
+            }
         }
 
         LocalBroadcastManager.getInstance(this).registerReceiver(syncMessageReceiver, new IntentFilter(Utils.SYNC_BROADCAST_NAME));
@@ -161,6 +180,26 @@ public class SearchActivity extends AppCompatActivity{
                     EventsObservable.get().notifyEvent(EventsObservable.EventType.RenditionComplete);
                 }
             });
+        }
+    }
+
+    private AndroidAuthSession buildSession() {
+        AppKeyPair appKeyPair = new AppKeyPair(DropboxService.APP_KEY, DropboxService.APP_SECRET);
+
+        AndroidAuthSession session = new AndroidAuthSession(appKeyPair);
+        loadAuth(session);
+        return session;
+    }
+
+    private void loadAuth(AndroidAuthSession session) {
+
+        if(Utils.isDropBoxTokenSet(this)){
+            session.setOAuth2AccessToken(Utils.getDropBoxToken(this));
+        }else{
+            AppKeyPair appKeys = new AppKeyPair(DropboxService.APP_KEY, DropboxService.APP_SECRET);
+            session = new AndroidAuthSession(appKeys);
+            mDBApi = new DropboxAPI<AndroidAuthSession>(session);
+            mDBApi.getSession().startOAuth2Authentication(SearchActivity.this);
         }
     }
 

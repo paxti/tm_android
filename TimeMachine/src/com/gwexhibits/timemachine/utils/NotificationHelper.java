@@ -23,6 +23,7 @@ import org.json.JSONObject;
 public class NotificationHelper {
 
     private static final Integer NOTIFICATION_ID = 53431;
+    public static final Integer PROGRESS = 52221;
 
     public static void createNotification(Context context, JSONObject currentOrder){
 
@@ -83,6 +84,34 @@ public class NotificationHelper {
         NotificationManager notificationManager =
                 (NotificationManager) context.getSystemService(context.NOTIFICATION_SERVICE);
         notificationManager.cancel(NOTIFICATION_ID);
+    }
+
+
+    public static NotificationCompat.Builder getNotificationBuilder(Context context){
+
+        return new NotificationCompat.Builder(context)
+                .setContentTitle(context.getString(R.string.app_name))
+                .setContentText(context.getString(R.string.notification_photo_uploading))
+                .setSmallIcon(R.drawable.sf__icon)
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.COLOR_DEFAULT)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setProgress(100,0,true);
+
+    }
+    public static void buildUploadNotification(Context context){
+        NotificationCompat.Builder notificationBuilder  = getNotificationBuilder(context);
+
+        NotificationCompat.Style s = notificationBuilder.mStyle;
+        NotificationCompat.InboxStyle richNotification = new NotificationCompat.InboxStyle(notificationBuilder);
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(context.NOTIFICATION_SERVICE);
+        notificationManager.notify(NotificationHelper.PROGRESS, richNotification.build());
+    }
+
+    public static void updateUploadNotification(Context context, NotificationCompat.Builder notificationBuilder){
+        NotificationCompat.InboxStyle richNotification = new NotificationCompat.InboxStyle(notificationBuilder);
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(context.NOTIFICATION_SERVICE);
+        notificationManager.notify(NotificationHelper.PROGRESS, richNotification.build());
     }
 
 }

@@ -43,5 +43,8 @@
     <string name="notification_client">for %1$s</string>
     <string name="notification_show">in %1$s</string>
     <string name="notification_duration">Task is running for about %1$s!h</string>
+    <string name="notification_photo_uploading">Photo is uploading ...</string>
+    <string name="notification_upload_failed">Uploading to DropBox has failed !</string>
+    <string name="notification_uploaded">Upload finished</string>
 
 </resources>

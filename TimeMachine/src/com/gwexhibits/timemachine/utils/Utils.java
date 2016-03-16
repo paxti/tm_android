@@ -33,6 +33,8 @@ public class Utils {
     public static final String SYNC_BROADCAST_NAME = "detailsBroadcast";
     public static final String SYNC_BROADCAST_MESSAGE_KEY = "sync_message";
 
+    public static final String DROP_BOX_TOKEN = "drop_box_token";
+
     public static final String PREFS_NAME = "MyPrefsFile";
     public static final String CURRENT_ORDER = "current_order";
     public static final String CURRENT_TASK = "current_task";
@@ -110,9 +112,6 @@ public class Utils {
         UserAccount account = SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser();
         SmartStore smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);
 
-        smartStore.registerSoup(OrderObject.ORDER_SUPE, OrderObject.ORDERS_INDEX_SPEC);
-        smartStore.registerSoup(TimeObject.TIME_SUPE, TimeObject.TIMES_INDEX_SPEC);
-
         return smartStore.create(soupName, newEntry);
     }
 
@@ -165,4 +164,25 @@ public class Utils {
         String message = intent.getStringExtra(messageKey);
         Utils.showSnackbar(view, message);
     }
+
+    public static void saveDropBoxToken(Context context, String token){
+        SharedPreferences.Editor editor =  Utils.getSharedPreferencesEditor(context);
+        editor.putString(DROP_BOX_TOKEN, token);
+        editor.commit();
+    }
+
+    public static String getDropBoxToken(Context context){
+        return Utils.getSharedPreferences(context).getString(DROP_BOX_TOKEN, "");
+    }
+
+    public static boolean isDropBoxTokenSet(Context context){
+        if (Utils.getSharedPreferences(context).getString(DROP_BOX_TOKEN, "").length() > 0 ){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+
+
 }

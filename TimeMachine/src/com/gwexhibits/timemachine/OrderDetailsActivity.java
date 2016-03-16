@@ -1,25 +1,35 @@
 package com.gwexhibits.timemachine;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.dropbox.client2.DropboxAPI;
+import com.dropbox.client2.android.AndroidAuthSession;
 import com.gwexhibits.timemachine.objects.OrderDetails;
 import com.gwexhibits.timemachine.cards.OrderDetailsSections;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.cards.TaskStatusCard;
+import com.gwexhibits.timemachine.objects.sf.PhotoObject;
 import com.gwexhibits.timemachine.objects.sf.TimeObject;
+import com.gwexhibits.timemachine.services.DropboxService;
 import com.gwexhibits.timemachine.services.TimesSyncService;
 import com.gwexhibits.timemachine.utils.NotificationHelper;
 import com.gwexhibits.timemachine.utils.Utils;
@@ -29,7 +39,11 @@ import com.salesforce.androidsdk.smartsync.util.Constants;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Date;
 
 import butterknife.Bind;
 import butterknife.BindString;
@@ -43,6 +57,7 @@ import jp.wasabeef.recyclerview.animators.SlideInLeftAnimator;
 public class OrderDetailsActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final int STATUS_CARD_POSITION = 0;
+    private static final int REQUEST_IMAGE_CAPTURE = 1;
 
     public static final String ORDER_KEY = "order";
     public static final String PHASE_KEY = "phase";
@@ -57,11 +72,14 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     @Bind(R.id.toolbar_layout) CollapsingToolbarLayout collapsingToolbar;
     @Bind(R.id.subtitle) TextView subtitle;
     @Bind(R.id.start_new_task) FloatingActionButton startNewTaskButton;
+    @Bind(R.id.camear) FloatingActionButton camera;
     @Bind(R.id.cards_recyclerview) CardRecyclerView recyclerView;
 
     private JSONObject currentOrder;
     private ArrayList<Card> cards = new ArrayList<>();
     private CardArrayRecyclerViewAdapter cardArrayAdapter;
+    private File imageFile;
+    DropboxAPI<AndroidAuthSession> mApi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -173,6 +191,33 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
         }
     }
 
+    @OnClick(R.id.camear)
+    public void takePicture(View view) {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        //TODO: Move from activity
+        String path = Environment.getExternalStorageDirectory().getPath() + "/" +
+                getApplicationContext().getPackageName() +
+                "/data/photos";
+
+        String fileName = null;
+        try {
+            fileName = currentOrder.getString(OrderObject.SFID) + "_" +
+                    currentOrder.getString(TimeObject.PHASE) + "_" +
+                    new Date().toString() +
+                    ".jpg";
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        imageFile = new File(path, fileName);
+        Uri uri = Uri.fromFile(imageFile);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+        intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
+        startActivityForResult(intent, 0);
+    }
+
     private void hideStartNewTaskButton(){
         CoordinatorLayout.LayoutParams p = (CoordinatorLayout.LayoutParams) startNewTaskButton.getLayoutParams();
         p.setAnchorId(View.NO_ID);
@@ -216,6 +261,60 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
                 startService(mServiceIntent);
             }
         }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch(requestCode) {
+            case 0:
+                switch(resultCode) {
+                    case Activity.RESULT_OK:
+                        if (imageFile.exists()) {
+                            try {
+                                FileInputStream inputStream = null;
+                                inputStream = new FileInputStream(imageFile);
+
+                                String path = imageFile.getAbsolutePath();
+                                String fileName =  imageFile.getName();
+                                String phase = "";
+                                String order = "";
+                                try {
+                                    order = currentOrder.getString(Constants.ID);
+                                    phase = currentOrder.getString(TimeObject.PHASE);
+
+                                    Utils.saveToSmartStore(PhotoObject.PHOTOS_SUPE,
+                                            PhotoObject.createRecord(path, "/test_tm/" + phase + "/" +fileName, phase, order));
+
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+                                Intent mServiceIntent = new Intent(getApplicationContext(), DropboxService.class);
+                                startService(mServiceIntent);
+                            } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            AlertDialog.Builder alert =
+                                    new AlertDialog.Builder(this);
+                            alert.setTitle("Error").setMessage(
+                                    "Returned OK but image not created!").show();
+                        }
+                        break;
+                    case Activity.RESULT_CANCELED:
+                        break;
+                    default:
+                        Toast.makeText(this,
+                                "Unexpected resultCode: " + resultCode,
+                                Toast.LENGTH_LONG).show();
+                }
+                break;
+            default:
+                Toast.makeText(this,
+                        "UNEXPECTED ACTIVITY COMPLETION",
+                        Toast.LENGTH_LONG).show();
+        }
+        finish();
     }
 
     private BroadcastReceiver syncMessageReceiver = new BroadcastReceiver() {
