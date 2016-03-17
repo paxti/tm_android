@@ -9,6 +9,7 @@ import android.support.v7.app.AlertDialog;
 
 import com.gwexhibits.timemachine.OrderDetailsActivity;
 import com.gwexhibits.timemachine.R;
+import com.gwexhibits.timemachine.objects.pojo.Order;
 
 public class StagePopUp extends DialogFragment {
 
@@ -29,7 +30,7 @@ public class StagePopUp extends DialogFragment {
                         public void onClick(DialogInterface dialog, int id) {
                             Intent showOrderDetails = new Intent(getActivity(), OrderDetailsActivity.class);
                             showOrderDetails.putExtra(OrderDetailsActivity.ORDER_KEY,
-                                    bundle.getString(OrderDetailsActivity.ORDER_KEY));
+                                    (Order) bundle.getSerializable(OrderDetailsActivity.ORDER_KEY));
 
                             showOrderDetails.putExtra(OrderDetailsActivity.PHASE_KEY,
                                     bundle.getStringArray(LIST_OF_PHASES_KEY)[id]);

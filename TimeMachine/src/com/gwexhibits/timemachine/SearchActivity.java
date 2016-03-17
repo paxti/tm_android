@@ -5,15 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 
@@ -21,19 +16,34 @@ import com.baoyz.widget.PullRefreshLayout;
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.session.AppKeyPair;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.gwexhibits.timemachine.listeners.SearchBarListener;
+import com.gwexhibits.timemachine.objects.pojo.Order;
+import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.services.DropboxService;
 import com.gwexhibits.timemachine.services.OrdersSyncService;
 import com.gwexhibits.timemachine.utils.Utils;
 import com.quinny898.library.persistentsearch.SearchBox;
+import com.salesforce.androidsdk.accounts.UserAccount;
 import com.salesforce.androidsdk.accounts.UserAccountManager;
 import com.salesforce.androidsdk.app.SalesforceSDKManager;
 import com.salesforce.androidsdk.rest.ClientManager;
 import com.salesforce.androidsdk.rest.RestClient;
 import com.salesforce.androidsdk.security.PasscodeManager;
+import com.salesforce.androidsdk.smartstore.store.SmartStore;
 import com.salesforce.androidsdk.smartstore.ui.SmartStoreInspectorActivity;
+import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
+import com.salesforce.androidsdk.smartsync.manager.SyncManager;
 import com.salesforce.androidsdk.util.EventsObservable;
 import com.salesforce.androidsdk.util.UserSwitchReceiver;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -233,6 +243,35 @@ public class SearchActivity extends AppCompatActivity{
     public void button2Clicked(Button button) {
         final Intent i = new Intent(this, SmartStoreInspectorActivity.class);
         startActivity(i);
+    }
+
+    @OnClick(R.id.button3)
+    public void button3Clicked(Button button) {
+        UserAccount account = SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser();
+        SmartStore smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);
+        SyncManager syncMgr = SyncManager.getInstance(account);
+
+        try {
+            JSONArray array = smartStore.retrieve(OrderObject.ORDER_SUPE, (long) 1, (long) 2, (long) 3, (long) 4, (long) 5);
+
+            for(int i = 0; i < array.length(); i++ ){
+
+                JSONObject object = array.getJSONObject(i);
+
+                ObjectMapper mapper = new ObjectMapper();
+                final ObjectReader r = mapper.reader(Order.class);
+                Order user = r.readValue(object.toString());
+                String sfid = user.getSfid();
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Log.d("ERROR", e.getMessage());
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

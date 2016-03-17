@@ -25,6 +25,9 @@ import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.gwexhibits.timemachine.objects.OrderDetails;
 import com.gwexhibits.timemachine.cards.OrderDetailsSections;
+import com.gwexhibits.timemachine.objects.pojo.Attribute;
+import com.gwexhibits.timemachine.objects.pojo.Order;
+import com.gwexhibits.timemachine.objects.pojo.Time;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.cards.TaskStatusCard;
 import com.gwexhibits.timemachine.objects.sf.PhotoObject;
@@ -75,7 +78,7 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     @Bind(R.id.camear) FloatingActionButton camera;
     @Bind(R.id.cards_recyclerview) CardRecyclerView recyclerView;
 
-    private JSONObject currentOrder;
+    private Time currentTask;
     private ArrayList<Card> cards = new ArrayList<>();
     private CardArrayRecyclerViewAdapter cardArrayAdapter;
     private File imageFile;
@@ -118,77 +121,60 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     }
 
     private void setPassedData(){
-        try {
-            currentOrder = new JSONObject(getIntent().getStringExtra(ORDER_KEY));
-            if(getIntent().getStringExtra(PHASE_KEY) != null) {
-                currentOrder.put(TimeObject.PHASE, getIntent().getStringExtra(PHASE_KEY));
-            }
-        } catch (JSONException e) {
-            Utils.showSnackbar(coordinatorLayout, "Can't get information about this order");
+        currentTask = new Time();
+
+        if(getIntent().getStringExtra(PHASE_KEY) != null){
+            currentTask.setPhase(getIntent().getStringExtra(PHASE_KEY));
+        }
+
+        // TODO: check if can be casted
+        if(getIntent().getSerializableExtra(ORDER_KEY) != null){
+            currentTask.setOrder((Order) getIntent().getSerializableExtra(ORDER_KEY));
         }
     }
 
     private void setTitles(){
-        String account = this.getResources().getString(R.string.empty);
-        String sfid = this.getResources().getString(R.string.error_message);
-        String show = this.getResources().getString(R.string.empty);
-
-        if (currentOrder != null){
-            try {
-                account = Utils.getStringValue(currentOrder, OrderObject.CLIENT_NAME);
-                sfid = currentOrder.getString(OrderObject.SFID);
-                show = android.text.Html.fromHtml(currentOrder.getString(OrderObject.SHOW_NAME)).toString();
-            } catch (JSONException e) {
-                Utils.showSnackbar(coordinatorLayout, "Couldn't output order information");
-            }
-        }
-
-        collapsingToolbar.setTitle(sfidTitle + sfid);
-        subtitle.setText(account + "@" + show);
+        collapsingToolbar.setTitle(sfidTitle + currentTask.getOrder().getSfid());
+        subtitle.setText(currentTask.getOrder().getOrderTitle());
     }
 
     private void loadDataFromDB(){
 
         int position = 0;
+        OrderDetails details = new OrderDetails(currentTask.getOrder());
 
-        try {
-            OrderDetails details = new OrderDetails(currentOrder.getLong(SmartStore.SOUP_ENTRY_ID));
-
-            if(Utils.isCurrentTaskRunning(this)){
-                hideStartNewTaskButton();
-            }
-
-            for (OrderDetailsSections section : details.getDetailsSection()){
-                if (section.getListItems().size() > 0) {
-                    cards.add(section);
-                    section.init();
-
-                    cardArrayAdapter.notifyItemInserted(position);
-                    position++;
-                }
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
+        if(Utils.isCurrentTaskRunning(this)){
+            hideStartNewTaskButton();
         }
+
+        for (OrderDetailsSections section : details.getDetailsSection()){
+            if (section.getListItems().size() > 0) {
+                cards.add(section);
+                section.init();
+
+                cardArrayAdapter.notifyItemInserted(position);
+                position++;
+            }
+        }
+
     }
 
     @OnClick(R.id.start_new_task)
     public void startTask(View view) {
-        try {
+        /*try {
             JSONObject newTaskEntry = TimeObject.createTimeObjectStartedNow(
-                    currentOrder.getString(Constants.ID),
-                    currentOrder.getString(TimeObject.PHASE));
+                    currentTask.getOrder().getString(Constants.ID),
+                    currentTask.getOrder().getString(TimeObject.PHASE));
 
             JSONObject createdTaskEntry = Utils.saveToSmartStore(TimeObject.TIME_SUPE, newTaskEntry);
 
             Utils.addCurrentTask(this, createdTaskEntry.getString(SmartStore.SOUP_ENTRY_ID));
-            Utils.addCurrentOrder(this, currentOrder);
-            NotificationHelper.createNotification(this, currentOrder);
+            Utils.addCurrentOrder(this, currentTask.getOrder());
+            NotificationHelper.createNotification(this, currentTask.getOrder());
 
         } catch (JSONException e) {
             Utils.showSnackbar(coordinatorLayout, "Wasn't able to create task");
-        }
+        }*/
     }
 
     @OnClick(R.id.camear)
@@ -200,16 +186,7 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
                 getApplicationContext().getPackageName() +
                 "/data/photos";
 
-        String fileName = null;
-        try {
-            fileName = currentOrder.getString(OrderObject.SFID) + "_" +
-                    currentOrder.getString(TimeObject.PHASE) + "_" +
-                    new Date().toString() +
-                    ".jpg";
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        String fileName = currentTask.getPhotoName();
 
         imageFile = new File(path, fileName);
         Uri uri = Uri.fromFile(imageFile);
@@ -265,7 +242,7 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch(requestCode) {
+        /*switch(requestCode) {
             case 0:
                 switch(resultCode) {
                     case Activity.RESULT_OK:
@@ -277,22 +254,19 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
                                 String path = imageFile.getAbsolutePath();
                                 String fileName =  imageFile.getName();
                                 String phase = "";
-                                String order = "";
-                                try {
-                                    order = currentOrder.getString(Constants.ID);
-                                    phase = currentOrder.getString(TimeObject.PHASE);
+
+//                                    phase = currentOrder.getString(TimeObject.PHASE);
 
                                     Utils.saveToSmartStore(PhotoObject.PHOTOS_SUPE,
-                                            PhotoObject.createRecord(path, "/test_tm/" + phase + "/" +fileName, phase, order));
+                                            PhotoObject.createRecord(path, "/test_tm/" + phase + "/" +fileName, phase, currentOrder.getEntyIdInString()));
 
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
 
                                 Intent mServiceIntent = new Intent(getApplicationContext(), DropboxService.class);
                                 startService(mServiceIntent);
                             } catch (FileNotFoundException e) {
                                 e.printStackTrace();
+                            }catch (JSONException jex){
+                                jex.printStackTrace();
                             }
                         } else {
                             AlertDialog.Builder alert =
@@ -314,7 +288,7 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
                         "UNEXPECTED ACTIVITY COMPLETION",
                         Toast.LENGTH_LONG).show();
         }
-        finish();
+        finish();*/
     }
 
     private BroadcastReceiver syncMessageReceiver = new BroadcastReceiver() {

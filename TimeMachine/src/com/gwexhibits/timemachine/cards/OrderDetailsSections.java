@@ -74,7 +74,11 @@ public class OrderDetailsSections extends CardWithList {
     }
 
     public void addItem(CardWithList.ListObject item){
-        listItems.add(item);
+        int t = 0;
+        if(item != null && ((OrderDetailsItem) item).getFieldValue() != null) {
+            listItems.add(item);
+            t =1;
+        }
     }
 
     @Override

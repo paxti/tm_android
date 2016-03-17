@@ -97,14 +97,14 @@ public class DropboxService extends IntentService {
 
 
         } catch (JSONException e) {
-            notificationBuilder.setContentText(this.getString(R.string.notification_upload_faild));
+            notificationBuilder.setContentText(this.getString(R.string.notification_upload_failed));
             notificationBuilder.setProgress(1, 1, false);
             notificationManager.notify(NotificationHelper.PROGRESS, richNotification.build());
         } catch (FileNotFoundException fe){
 
             fe.printStackTrace();
         } catch (DropboxException e) {
-            notificationBuilder.setContentText(this.getString(R.string.notification_upload_faild));
+            notificationBuilder.setContentText(this.getString(R.string.notification_upload_failed));
             notificationBuilder.setProgress(1, 1, false);
             notificationManager.notify(NotificationHelper.PROGRESS, richNotification.build());
         }
