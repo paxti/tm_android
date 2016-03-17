@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.gwexhibits.timemachine"
     android:installLocation="internalOnly"
-    android:versionCode="1"
+    android:versionCode="100042"
     android:versionName="1.0">
 
     <uses-sdk
@@ -58,18 +58,9 @@
         <activity
             android:name=".OrderDetailsActivity"
             android:label="@string/title_activity_order_details"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
 
-        <!-- This service is only used on devices with API v17+ -->
-        <service
-            android:name="drawable.MyDaydreamService"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.service.dreams.DreamService" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </service>
     </application>
 
 </manifest>
