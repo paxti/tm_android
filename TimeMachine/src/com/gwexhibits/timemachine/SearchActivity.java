@@ -24,6 +24,7 @@ import com.gwexhibits.timemachine.objects.pojo.Order;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.services.DropboxService;
 import com.gwexhibits.timemachine.services.OrdersSyncService;
+import com.gwexhibits.timemachine.utils.PreferencesManager;
 import com.gwexhibits.timemachine.utils.Utils;
 import com.quinny898.library.persistentsearch.SearchBox;
 import com.salesforce.androidsdk.accounts.UserAccount;
@@ -134,10 +135,9 @@ public class SearchActivity extends AppCompatActivity{
         }
 
         LocalBroadcastManager.getInstance(this).registerReceiver(syncMessageReceiver, new IntentFilter(Utils.SYNC_BROADCAST_NAME));
-
-        if (Utils.isCurrentTaskRunning(this)){
+        PreferencesManager.initializeInstance(this);
+        if (PreferencesManager.getInstance().isCurrentTaskRunning()){
             Intent showOrderDetails = new Intent(SearchActivity.this, OrderDetailsActivity.class);
-            showOrderDetails.putExtra(OrderDetailsActivity.ORDER_KEY, String.valueOf(Utils.getCurrentOrder(this)));
             this.startActivity(showOrderDetails);
         }
     }

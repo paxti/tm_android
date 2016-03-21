@@ -8,8 +8,19 @@ import android.net.NetworkInfo;
 import android.support.design.widget.Snackbar;
 import android.view.View;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.gwexhibits.timemachine.objects.pojo.Order;
+import com.gwexhibits.timemachine.objects.pojo.Time;
+import com.gwexhibits.timemachine.objects.pojo.Views;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.objects.sf.TimeObject;
+import com.gwexhibits.timemachine.serializers.OrderSerializer;
 import com.gwexhibits.timemachine.services.OrdersSyncService;
 import com.salesforce.androidsdk.accounts.UserAccount;
 import com.salesforce.androidsdk.app.SalesforceSDKManager;
@@ -20,6 +31,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -40,33 +52,32 @@ public class Utils {
     public static final String CURRENT_TASK = "current_task";
     public static final String SF_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
-    public static String getStringValue(JSONObject initialObject, String fieldName) throws JSONException {
-        String value = "";
-        String[] spitedFieldName = fieldName.split("\\.");
-        if (spitedFieldName.length > 1){
-            JSONObject object = initialObject.getJSONObject(spitedFieldName[0]);
-            for (int i = 1; i < spitedFieldName.length - 1; i++){
-                object = object.getJSONObject(spitedFieldName[i]);
-            }
-            value = object.getString(spitedFieldName[spitedFieldName.length -1]);
-        }else{
-            value = initialObject.getString(fieldName);
-        }
-        return value;
-    }
-
-
     public static SharedPreferences getSharedPreferences(Context context){
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREFS_NAME, context.MODE_PRIVATE);
         return sharedPreferences;
     }
 
-    public static String getCurrentOrder(Context context){
-        return Utils.getSharedPreferences(context).getString(CURRENT_ORDER, "");
+    public static Long getCurrentOrder(Context context){
+        return Utils.getSharedPreferences(context).getLong(CURRENT_ORDER, -1);
     }
 
     public static Long getCurrentTask(Context context){
-        return Utils.getSharedPreferences(context).getLong(CURRENT_TASK, 0);
+        return Utils.getSharedPreferences(context).getLong(CURRENT_TASK, -1);
+    }
+
+    public static Time getCurrentTaskObject(Context context){
+
+        Time currentTask = null;
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectReader jsonReader = mapper.reader(Time.class);
+
+        try {
+            currentTask = (Time) jsonReader.readValue("");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return currentTask;
     }
 
     public static SharedPreferences.Editor getSharedPreferencesEditor(Context context){
@@ -75,7 +86,7 @@ public class Utils {
     }
 
     public static boolean isCurrentTaskRunning(Context context){
-        if (Utils.getCurrentOrder(context).length() > 0 && Utils.getCurrentTask(context) > 0){
+        if (Utils.getCurrentTask(context) > 0){
             return true;
         }else {
             return false;
@@ -88,9 +99,9 @@ public class Utils {
         editor.commit();
     }
 
-    public static void addCurrentTask(Context context, String Id){
+    public static void addCurrentTask(Context context, String task){
         SharedPreferences.Editor editor =  Utils.getSharedPreferencesEditor(context);
-        editor.putLong(CURRENT_TASK, Long.parseLong(Id));
+        editor.putString(CURRENT_TASK, task);
         editor.commit();
     }
 
@@ -108,11 +119,12 @@ public class Utils {
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
 
-    public static JSONObject saveToSmartStore(String soupName, JSONObject newEntry) throws JSONException {
+    public static String saveToSmartStore(String soupName, Time task) throws JSONException {
         UserAccount account = SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser();
         SmartStore smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);
 
-        return smartStore.create(soupName, newEntry);
+        JSONObject object = smartStore.create(soupName, new JSONObject(timeObjectToStringNoOrder(task)));
+        return object.getString(SmartStore.SOUP_ENTRY_ID);
     }
 
     public static void removeCurrentTaskAndOrder(Context context){
@@ -126,33 +138,25 @@ public class Utils {
         UserAccount account = SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser();
         SmartStore smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);
 
-        Long taskId = Utils.getCurrentTask(context);
+        Time currentTask = getCurrentTaskObject(context);
+        currentTask.setEndTime(Utils.getCurrentTimeInSfFormat());
 
-        JSONObject entry = smartStore.retrieve(TimeObject.TIME_SUPE, taskId).getJSONObject(0);
-        entry.put(TimeObject.END_TIME, getCurrentTimeInSfFormat());
-        smartStore.update(TimeObject.TIME_SUPE, entry, taskId);
+        smartStore.update(TimeObject.TIME_SUPE, new JSONObject(timeObjectToString(currentTask)),
+                currentTask.getEntyId());
 
         Utils.removeCurrentTaskAndOrder(context);
-    }
-
-    public static JSONObject getCurrentTimeEntry(Context context) throws JSONException {
-        UserAccount account = SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser();
-        SmartStore smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);
-
-        Long taskId = Utils.getCurrentTask(context);
-
-        return smartStore.retrieve(TimeObject.TIME_SUPE, taskId).getJSONObject(0);
     }
 
     public static void updateNote(Context context, String note) throws JSONException {
         UserAccount account = SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser();
         SmartStore smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);
 
-        Long taskId = Utils.getCurrentTask(context);
+        Time currentTask = getCurrentTaskObject(context);
+        currentTask.setNote(note);
 
-        JSONObject entry = smartStore.retrieve(TimeObject.TIME_SUPE, taskId).getJSONObject(0);
-        entry.put(TimeObject.NOTE, note);
-        smartStore.update(TimeObject.TIME_SUPE, entry, taskId);
+        smartStore.update(TimeObject.TIME_SUPE, new JSONObject(timeObjectToString(currentTask)),
+                currentTask.getEntyId());
+        addCurrentTask(context, Utils.timeObjectToString(currentTask));
     }
 
     public static void showSnackbar(View view, String message){
@@ -183,6 +187,31 @@ public class Utils {
         }
     }
 
+    public static String timeObjectToString(Time currentTask) {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        mapper.writerWithView(Views.Full.class);
+        JsonNode node = mapper.valueToTree(currentTask);
+        return node.toString();
+    }
+
+    public static String timeObjectToStringNoOrder(Time currentTask) {
+
+        SimpleModule simpleModule = new SimpleModule();
+        simpleModule.addSerializer(Order.class, new OrderSerializer());
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        mapper.writerWithView(Views.SimpleOrder.class);
+        mapper.registerModule(simpleModule);
+
+        JsonNode node = mapper.valueToTree(currentTask);
+        return node.toString();
+    }
 
 
 }

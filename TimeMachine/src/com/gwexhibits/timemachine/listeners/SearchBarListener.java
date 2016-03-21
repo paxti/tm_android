@@ -16,6 +16,7 @@ import com.gwexhibits.timemachine.fragments.StagePopUp;
 import com.gwexhibits.timemachine.objects.OrderDetails;
 import com.gwexhibits.timemachine.objects.pojo.Attribute;
 import com.gwexhibits.timemachine.objects.pojo.Order;
+import com.gwexhibits.timemachine.objects.pojo.Views;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.objects.sf.TimeObject;
 import com.gwexhibits.timemachine.utils.Utils;
@@ -52,6 +53,7 @@ public class SearchBarListener implements SearchBox.SearchListener {
         this.context = context;
 
         mapper = new ObjectMapper();
+        mapper.writerWithView(Views.Full.class);
         jsonReader = mapper.reader(Order.class);
     }
 
@@ -114,14 +116,14 @@ public class SearchBarListener implements SearchBox.SearchListener {
 
             DialogFragment phaseDialog = new StagePopUp();
             Bundle bundle = new Bundle();
-            bundle.putSerializable(OrderDetailsActivity.ORDER_KEY, (Order) result.value);
+            bundle.putSerializable(OrderDetailsActivity.ORDER_KEY, ((Order) result.value).getEntyId());
             bundle.putStringArray(StagePopUp.LIST_OF_PHASES_KEY, list);
             phaseDialog.setArguments(bundle);
             phaseDialog.show(activity.getSupportFragmentManager(),
                     context.getString(R.string.stage_dialog_tag));
         }else{
             Intent showOrderDetails = new Intent(context, OrderDetailsActivity.class);
-            showOrderDetails.putExtra(OrderDetailsActivity.ORDER_KEY, (Order) result.value);
+            showOrderDetails.putExtra(OrderDetailsActivity.ORDER_KEY, ((Order) result.value).getEntyId());
             showOrderDetails.putExtra(OrderDetailsActivity.PHASE_KEY, list[0]);
             context.startActivity(showOrderDetails);
         }

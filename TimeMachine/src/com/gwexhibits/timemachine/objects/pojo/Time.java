@@ -1,24 +1,43 @@
 package com.gwexhibits.timemachine.objects.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.objects.sf.TimeObject;
+import com.gwexhibits.timemachine.utils.Utils;
+import com.salesforce.androidsdk.accounts.UserAccount;
+import com.salesforce.androidsdk.smartstore.store.SmartStore;
+import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by psyfu on 3/17/2016.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Time implements Serializable {
 
+    @JsonProperty(SmartStore.SOUP_ENTRY_ID)
+    private Long entyId;
+
     @JsonProperty(TimeObject.ORDER)
-    private Order order;
+    @JsonView({Views.Full.class, Views.SimpleOrder.class})
+    private String orderId;
 
     @JsonProperty(TimeObject.NOTE)
     private String note;
 
     @JsonProperty(TimeObject.PHASE)
+    @JsonView(Views.Full.class)
     private String phase;
 
     @JsonProperty(TimeObject.START_TIME)
@@ -30,24 +49,63 @@ public class Time implements Serializable {
     @JsonProperty(OrderObject.ATTRIBUTES)
     private Attribute attribute;
 
+    @JsonProperty(TimeObject.LOCAL)
+    private Boolean local;
+
+    @JsonProperty(TimeObject.LOCALY_CREATED)
+    private Boolean locallyCreated;
+
+    @JsonProperty(TimeObject.LOCALY_UPDATED)
+    private Boolean locallyUpdated;
+
+    @JsonProperty(TimeObject.LOCALY_DELETED)
+    private Boolean locallyDeleted;
+
+
     public Time(){
 
     }
 
-    public Order getOrder() {
-        return order;
+    public Time(String orderId, String phase){
+        setOrderId(orderId);
+        setPhase(phase);
     }
 
-    public void setOrder(Order order) {
-        this.order = order;
+    public Long getEntyId() {
+        return entyId;
+    }
+
+    public String getEntyIdInString() {
+        return String.valueOf(entyId);
+    }
+
+    public void setEntyId(String entyId) {
+        this.entyId = Long.parseLong(entyId);
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
     }
 
     public String getNote() {
-        return note;
+        if (note == null){
+            return "";
+        }else {
+            return note;
+        }
     }
 
     public void setNote(String note) {
-        this.note = note;
+
+        if (note != null){
+            this.note = note;
+        }else{
+            this.note = "";
+        }
     }
 
     public String getPhase() {
@@ -82,7 +140,53 @@ public class Time implements Serializable {
         this.attribute = attribute;
     }
 
-    public String getPhotoName(){
-        return getOrder().getSfid() + "_" + getPhase() + "_" + new Date().toString() + ".jpg";
+    public Boolean getLocal() {
+        return local;
+    }
+
+    public void setLocal(Boolean local) {
+        this.local = local;
+    }
+
+    public Boolean getLocallyCreated() {
+        return locallyCreated;
+    }
+
+    public void setLocallyCreated(Boolean locallyCreated) {
+        this.locallyCreated = locallyCreated;
+    }
+
+    public Boolean getLocallyUpdated() {
+        return locallyUpdated;
+    }
+
+    public void setLocallyUpdated(Boolean locallyUpdated) {
+        this.locallyUpdated = locallyUpdated;
+    }
+
+    public Boolean getLocallyDeleted() {
+        return locallyDeleted;
+    }
+
+    public void setLocallyDeleted(Boolean locallyDeleted) {
+        this.locallyDeleted = locallyDeleted;
+    }
+
+    public Time start(){
+        setLocal(true);
+        setLocallyCreated(true);
+        setLocallyDeleted(false);
+        setLocallyUpdated(false);
+        setStartTime(Utils.getCurrentTimeInSfFormat());
+        setEntyId(String.valueOf(System.currentTimeMillis()));
+        Attribute attribute = new Attribute();
+        attribute.setType(TimeObject.TIME_SF_OBJECT);
+        setAttribute(attribute);
+        return this;
+    }
+
+    public Time stop(){
+        setEndTime(Utils.getCurrentTimeInSfFormat());
+        return this;
     }
 }

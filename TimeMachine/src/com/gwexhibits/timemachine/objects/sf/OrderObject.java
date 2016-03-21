@@ -39,6 +39,7 @@ public class OrderObject extends SalesforceObject {
 
     public static final String RELEATED_OPPORTUNITY = "Related_Opportunity__r";
     public static final String CONFIGURATION = "Configuration__r";
+    public static final String OPP_CONFIGURATION = RELEATED_OPPORTUNITY + "." + CONFIGURATION;
 
     public static final String CONFIGURATION_NAME = "Name";
     public static final String CONFIGURATION_TIME_PRE_STAGE = "Estimated_Pre_Stage_Time__c";
@@ -64,11 +65,11 @@ public class OrderObject extends SalesforceObject {
             new IndexSpec(SHIPPING_DATE, SmartStore.Type.string),
             new IndexSpec(INSTRUCTIONS, SmartStore.Type.string),
             new IndexSpec(DROPBOX_LINK, SmartStore.Type.string),
-            new IndexSpec(CONFIGURATION + CONFIGURATION_NAME, SmartStore.Type.string),
-            new IndexSpec(CONFIGURATION + CONFIGURATION_TIME_PRE_STAGE, SmartStore.Type.string),
-            new IndexSpec(CONFIGURATION + CONFIGURATION_TIME_UP, SmartStore.Type.string),
-            new IndexSpec(CONFIGURATION + CONFIGURATION_TIME_DOWN, SmartStore.Type.string),
-            new IndexSpec(CONFIGURATION + CONFIGURATION_TIME_RI, SmartStore.Type.string)
+            new IndexSpec(OPP_CONFIGURATION + "." + CONFIGURATION_NAME, SmartStore.Type.string),
+            new IndexSpec(OPP_CONFIGURATION + "." + CONFIGURATION_TIME_PRE_STAGE, SmartStore.Type.string),
+            new IndexSpec(OPP_CONFIGURATION + "." + CONFIGURATION_TIME_UP, SmartStore.Type.string),
+            new IndexSpec(OPP_CONFIGURATION + "." + CONFIGURATION_TIME_DOWN, SmartStore.Type.string),
+            new IndexSpec(OPP_CONFIGURATION + "." + CONFIGURATION_TIME_RI, SmartStore.Type.string)
     };
 
     public static final String[] ORDER_FIELDS_SYNC_DOWN = {
@@ -81,11 +82,11 @@ public class OrderObject extends SalesforceObject {
             SHIPPING_DATE,
             INSTRUCTIONS,
             DROPBOX_LINK,
-            CONFIGURATION + CONFIGURATION_NAME,
-            CONFIGURATION + CONFIGURATION_TIME_PRE_STAGE,
-            CONFIGURATION + CONFIGURATION_TIME_UP,
-            CONFIGURATION + CONFIGURATION_TIME_DOWN,
-            CONFIGURATION + CONFIGURATION_TIME_RI,
+            OPP_CONFIGURATION + "." + CONFIGURATION_NAME,
+            OPP_CONFIGURATION + "." + CONFIGURATION_TIME_PRE_STAGE,
+            OPP_CONFIGURATION + "." + CONFIGURATION_TIME_UP,
+            OPP_CONFIGURATION + "." + CONFIGURATION_TIME_DOWN,
+            OPP_CONFIGURATION + "." + CONFIGURATION_TIME_RI,
             Constants.LAST_MODIFIED_DATE
     };
 

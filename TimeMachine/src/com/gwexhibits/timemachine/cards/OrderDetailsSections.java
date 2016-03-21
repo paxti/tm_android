@@ -74,10 +74,8 @@ public class OrderDetailsSections extends CardWithList {
     }
 
     public void addItem(CardWithList.ListObject item){
-        int t = 0;
         if(item != null && ((OrderDetailsItem) item).getFieldValue() != null) {
             listItems.add(item);
-            t =1;
         }
     }
 
@@ -105,6 +103,10 @@ public class OrderDetailsSections extends CardWithList {
 
         if(childPosition != 0){
             icon.setVisibility(View.INVISIBLE);
+        }
+
+        if(iconResourceId == -1){
+            icon.setVisibility(View.GONE);
         }
 
 /*        if(iconResourceId < 0) {

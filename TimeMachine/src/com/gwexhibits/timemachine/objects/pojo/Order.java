@@ -110,7 +110,7 @@ public class Order implements Serializable {
     }
 
     public void setShowName(String showName) {
-        this.showName = Html.escapeHtml(showName);
+        this.showName = showName;
     }
 
     public String getShippingDate() {
@@ -172,6 +172,6 @@ public class Order implements Serializable {
     }
 
     public String getOrderTitle(){
-        return getAccount().getName() + "@" + getShowName();
+        return getAccount().getName() + "@" + Html.fromHtml(getShowName());
     }
 }

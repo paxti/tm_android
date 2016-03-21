@@ -1,52 +1,39 @@
 package com.gwexhibits.timemachine;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
+import android.support.annotation.Nullable;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
+import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.dropbox.client2.DropboxAPI;
-import com.dropbox.client2.android.AndroidAuthSession;
 import com.gwexhibits.timemachine.objects.OrderDetails;
 import com.gwexhibits.timemachine.cards.OrderDetailsSections;
-import com.gwexhibits.timemachine.objects.pojo.Attribute;
 import com.gwexhibits.timemachine.objects.pojo.Order;
 import com.gwexhibits.timemachine.objects.pojo.Time;
-import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.cards.TaskStatusCard;
-import com.gwexhibits.timemachine.objects.sf.PhotoObject;
-import com.gwexhibits.timemachine.objects.sf.TimeObject;
-import com.gwexhibits.timemachine.services.DropboxService;
-import com.gwexhibits.timemachine.services.TimesSyncService;
+import com.gwexhibits.timemachine.utils.DbManager;
 import com.gwexhibits.timemachine.utils.NotificationHelper;
+import com.gwexhibits.timemachine.utils.PreferencesManager;
 import com.gwexhibits.timemachine.utils.Utils;
-import com.salesforce.androidsdk.smartstore.store.SmartStore;
-import com.salesforce.androidsdk.smartsync.util.Constants;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 
 import butterknife.Bind;
 import butterknife.BindString;
@@ -65,11 +52,10 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     public static final String ORDER_KEY = "order";
     public static final String PHASE_KEY = "phase";
 
+    public static final String ACTION_FLAG = "action";
+    private static final String RESUME_ACTION_FLAG = "resume";
+
     @BindString(R.string.sfid_title) String sfidTitle;
-    @BindString(R.string.app_name) String appName;
-    @BindString(R.string.notification_subject) String notificationSubject;
-    @BindString(R.string.notication_go_to_order) String notificationGoToOrder;
-    @BindString(R.string.notification_stop) String notificationStop;
 
     @Bind(R.id.coordinator) CoordinatorLayout coordinatorLayout;
     @Bind(R.id.toolbar_layout) CollapsingToolbarLayout collapsingToolbar;
@@ -78,11 +64,16 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     @Bind(R.id.camear) FloatingActionButton camera;
     @Bind(R.id.cards_recyclerview) CardRecyclerView recyclerView;
 
-    private Time currentTask;
+    @Nullable @Bind(R.id.stop_task) Button stopTask;
+    @Nullable @Bind(R.id.add_note) Button addNote;
+    @Nullable @Bind(R.id.task_status_details) TextView statusDetails;
+    @Nullable @Bind(R.id.note) EditText taskNote;
+
     private ArrayList<Card> cards = new ArrayList<>();
     private CardArrayRecyclerViewAdapter cardArrayAdapter;
-    private File imageFile;
-    DropboxAPI<AndroidAuthSession> mApi;
+
+    private String phase = "";
+    private Order order = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,9 +81,7 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
         setContentView(R.layout.activity_order_details);
         ButterKnife.bind(this);
 
-        this.setPassedData();
-        this.setTitles();
-
+        PreferencesManager.initializeInstance(this);
         cardArrayAdapter = new CardArrayRecyclerViewAdapter(this, cards);
 
         recyclerView.setHasFixedSize(false);
@@ -103,13 +92,19 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
             recyclerView.setAdapter(cardArrayAdapter);
         }
 
-        this.loadDataFromDB();
+        if(PreferencesManager.getInstance().isCurrentTaskRunning()){
+            hideStartNewTaskButton();
+        }
+
+        DataLoader runner = new DataLoader();
+        runner.execute(getIntent().getLongExtra(ORDER_KEY, -1));
+        phase = getIntent().getStringExtra(PHASE_KEY);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        SharedPreferences sharedPreferences = getSharedPreferences(Utils.PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences(PreferencesManager.PREF_NAME, Context.MODE_PRIVATE);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         LocalBroadcastManager.getInstance(this).registerReceiver(syncMessageReceiver, new IntentFilter(Utils.SYNC_BROADCAST_NAME));
     }
@@ -120,66 +115,23 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
         LocalBroadcastManager.getInstance(this).unregisterReceiver(syncMessageReceiver);
     }
 
-    private void setPassedData(){
-        currentTask = new Time();
-
-        if(getIntent().getStringExtra(PHASE_KEY) != null){
-            currentTask.setPhase(getIntent().getStringExtra(PHASE_KEY));
-        }
-
-        // TODO: check if can be casted
-        if(getIntent().getSerializableExtra(ORDER_KEY) != null){
-            currentTask.setOrder((Order) getIntent().getSerializableExtra(ORDER_KEY));
-        }
-    }
-
-    private void setTitles(){
-        collapsingToolbar.setTitle(sfidTitle + currentTask.getOrder().getSfid());
-        subtitle.setText(currentTask.getOrder().getOrderTitle());
-    }
-
-    private void loadDataFromDB(){
-
-        int position = 0;
-        OrderDetails details = new OrderDetails(currentTask.getOrder());
-
-        if(Utils.isCurrentTaskRunning(this)){
-            hideStartNewTaskButton();
-        }
-
-        for (OrderDetailsSections section : details.getDetailsSection()){
-            if (section.getListItems().size() > 0) {
-                cards.add(section);
-                section.init();
-
-                cardArrayAdapter.notifyItemInserted(position);
-                position++;
-            }
-        }
-
-    }
-
     @OnClick(R.id.start_new_task)
     public void startTask(View view) {
-        /*try {
-            JSONObject newTaskEntry = TimeObject.createTimeObjectStartedNow(
-                    currentTask.getOrder().getString(Constants.ID),
-                    currentTask.getOrder().getString(TimeObject.PHASE));
-
-            JSONObject createdTaskEntry = Utils.saveToSmartStore(TimeObject.TIME_SUPE, newTaskEntry);
-
-            Utils.addCurrentTask(this, createdTaskEntry.getString(SmartStore.SOUP_ENTRY_ID));
-            Utils.addCurrentOrder(this, currentTask.getOrder());
-            NotificationHelper.createNotification(this, currentTask.getOrder());
-
+        try {
+            Time savedTime = DbManager.getInstance().startTask(order.getId(), phase);
+            PreferencesManager.getInstance().setCurrents(order.getEntyId(), savedTime.getEntyId());
+            NotificationHelper.createNotification(this, order);
         } catch (JSONException e) {
-            Utils.showSnackbar(coordinatorLayout, "Wasn't able to create task");
-        }*/
+            Log.e("TAG", e.getMessage());
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @OnClick(R.id.camear)
     public void takePicture(View view) {
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        /*Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
         //TODO: Move from activity
         String path = Environment.getExternalStorageDirectory().getPath() + "/" +
@@ -192,7 +144,7 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
         Uri uri = Uri.fromFile(imageFile);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
         intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
-        startActivityForResult(intent, 0);
+        startActivityForResult(intent, 0);*/
     }
 
     private void hideStartNewTaskButton(){
@@ -216,6 +168,7 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
 
     private void addCardToPosition(Card card, int position){
         cards.add(position, card);
+        cardArrayAdapter.notifyItemChanged(position);
         cardArrayAdapter.notifyItemInserted(position);
         recyclerView.scrollToPosition(position);
     }
@@ -228,14 +181,14 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(Utils.CURRENT_ORDER)) {
-            if(Utils.isCurrentTaskRunning(this)){
+        if (key.equals(PreferencesManager.CURRENT_TASK_KEY)) {
+            if(PreferencesManager.getInstance().isCurrentTaskRunning()){
                 hideStartNewTaskButton();
             }else{
                 showStartNewTaskButton();
 
-                Intent mServiceIntent = new Intent(getApplicationContext(), TimesSyncService.class);
-                startService(mServiceIntent);
+                /*Intent mServiceIntent = new Intent(getApplicationContext(), TimesSyncService.class);
+                startService(mServiceIntent);*/
             }
         }
     }
@@ -297,4 +250,56 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
             Utils.showSnackbar(intent, coordinatorLayout, Utils.SYNC_BROADCAST_MESSAGE_KEY);
         }
     };
+
+    private class DataLoader extends AsyncTask<Long, Integer, String> {
+
+        Order currentOrder;
+
+        @Override
+        protected String doInBackground(Long... params) {
+
+            try {
+                if (params[0] > 0) {
+                    currentOrder = DbManager.getInstance().getOrderObject(params[0]);
+                }else{
+                    currentOrder = DbManager.getInstance().getOrderObject();
+                }
+
+            } catch (JSONException jsonex) {
+                jsonex.printStackTrace();
+            } catch (IOException ioex) {
+                ioex.printStackTrace();
+            }
+            return currentOrder.getId();
+        }
+
+        protected void onPostExecute(String result) {
+            setTitles(currentOrder);
+            loadDataFromDB(currentOrder);
+            order = this.currentOrder;
+        }
+
+        private void setTitles(Order order){
+            collapsingToolbar.setTitle(sfidTitle + order.getSfid());
+            subtitle.setText(order.getOrderTitle());
+        }
+
+        private void loadDataFromDB(Order order){
+
+            int position = cards.size();
+            OrderDetails details = new OrderDetails(order);
+
+            for (OrderDetailsSections section : details.getDetailsSection()){
+                if (section.getListItems().size() > 0) {
+                    cards.add(section);
+                    section.init();
+
+                    cardArrayAdapter.notifyItemInserted(position);
+                    position++;
+                }
+            }
+
+        }
+
+    }
 }
