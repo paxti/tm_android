@@ -18,6 +18,7 @@
             android:layout_gravity="right"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
+            android:visibility="visible"
             android:theme="@style/ColoredButtonRed"/>
 
         <Button
@@ -25,6 +26,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/add_note"
+            android:visibility="invisible"
             android:theme="@style/ColoredButtonGreen"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true" />

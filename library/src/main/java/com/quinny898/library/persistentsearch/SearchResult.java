@@ -7,7 +7,7 @@ import org.json.JSONObject;
 public class SearchResult {
     public String title;
     public Drawable icon;
-    public JSONObject value;
+    public Object value;
     public boolean clickable;
 
     /**
@@ -16,7 +16,7 @@ public class SearchResult {
      * @param value
      * @param icon
      */
-    public SearchResult(String title, JSONObject value, Drawable icon) {
+    public SearchResult(String title, Object value, Drawable icon) {
         this.title = title;
         this.icon = icon;
         this.value = value;
@@ -30,7 +30,7 @@ public class SearchResult {
      * @param icon
      * @param clickable
      */
-    public SearchResult(String title, JSONObject value, Drawable icon, boolean clickable) {
+    public SearchResult(String title, Object value, Drawable icon, boolean clickable) {
         this.title = title;
         this.icon = icon;
         this.value = value;

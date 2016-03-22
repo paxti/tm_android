@@ -1,11 +1,15 @@
 package com.gwexhibits.timemachine;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -14,21 +18,29 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.gwexhibits.timemachine.objects.OrderDetails;
+import com.dropbox.core.v2.files.FileMetadata;
+import com.gwexhibits.timemachine.async.DropboxUploader;
+import com.gwexhibits.timemachine.async.UploadFileTask;
 import com.gwexhibits.timemachine.cards.OrderDetailsSections;
-import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.cards.TaskStatusCard;
-import com.gwexhibits.timemachine.objects.sf.TimeObject;
-import com.gwexhibits.timemachine.services.TimesSyncService;
+import com.gwexhibits.timemachine.objects.OrderDetails;
+import com.gwexhibits.timemachine.objects.pojo.Order;
+import com.gwexhibits.timemachine.objects.pojo.Photo;
+import com.gwexhibits.timemachine.objects.pojo.Time;
+import com.gwexhibits.timemachine.utils.DbManager;
+import com.gwexhibits.timemachine.utils.DropboxClientFactory;
 import com.gwexhibits.timemachine.utils.NotificationHelper;
+import com.gwexhibits.timemachine.utils.PreferencesManager;
 import com.gwexhibits.timemachine.utils.Utils;
-import com.salesforce.androidsdk.smartstore.store.SmartStore;
-import com.salesforce.androidsdk.smartsync.util.Constants;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
 import java.util.ArrayList;
 
 import butterknife.Bind;
@@ -48,20 +60,20 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     public static final String PHASE_KEY = "phase";
 
     @BindString(R.string.sfid_title) String sfidTitle;
-    @BindString(R.string.app_name) String appName;
-    @BindString(R.string.notification_subject) String notificationSubject;
-    @BindString(R.string.notication_go_to_order) String notificationGoToOrder;
-    @BindString(R.string.notification_stop) String notificationStop;
 
     @Bind(R.id.coordinator) CoordinatorLayout coordinatorLayout;
     @Bind(R.id.toolbar_layout) CollapsingToolbarLayout collapsingToolbar;
     @Bind(R.id.subtitle) TextView subtitle;
     @Bind(R.id.start_new_task) FloatingActionButton startNewTaskButton;
+    @Bind(R.id.camear) FloatingActionButton camera;
     @Bind(R.id.cards_recyclerview) CardRecyclerView recyclerView;
 
-    private JSONObject currentOrder;
     private ArrayList<Card> cards = new ArrayList<>();
     private CardArrayRecyclerViewAdapter cardArrayAdapter;
+
+    private String phase = "";
+    private Order order = null;
+    private File photoFile = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,9 +81,7 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
         setContentView(R.layout.activity_order_details);
         ButterKnife.bind(this);
 
-        this.setPassedData();
-        this.setTitles();
-
+        PreferencesManager.initializeInstance(this);
         cardArrayAdapter = new CardArrayRecyclerViewAdapter(this, cards);
 
         recyclerView.setHasFixedSize(false);
@@ -82,13 +92,19 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
             recyclerView.setAdapter(cardArrayAdapter);
         }
 
-        this.loadDataFromDB();
+        if(PreferencesManager.getInstance().isCurrentTaskRunning()){
+            hideStartNewTaskButton();
+        }
+
+        DataLoader runner = new DataLoader();
+        runner.execute(getIntent().getLongExtra(ORDER_KEY, -1));
+        phase = getIntent().getStringExtra(PHASE_KEY);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        SharedPreferences sharedPreferences = getSharedPreferences(Utils.PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences(PreferencesManager.PREF_NAME, Context.MODE_PRIVATE);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         LocalBroadcastManager.getInstance(this).registerReceiver(syncMessageReceiver, new IntentFilter(Utils.SYNC_BROADCAST_NAME));
     }
@@ -99,78 +115,27 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
         LocalBroadcastManager.getInstance(this).unregisterReceiver(syncMessageReceiver);
     }
 
-    private void setPassedData(){
-        try {
-            currentOrder = new JSONObject(getIntent().getStringExtra(ORDER_KEY));
-            if(getIntent().getStringExtra(PHASE_KEY) != null) {
-                currentOrder.put(TimeObject.PHASE, getIntent().getStringExtra(PHASE_KEY));
-            }
-        } catch (JSONException e) {
-            Utils.showSnackbar(coordinatorLayout, "Can't get information about this order");
-        }
-    }
-
-    private void setTitles(){
-        String account = this.getResources().getString(R.string.empty);
-        String sfid = this.getResources().getString(R.string.error_message);
-        String show = this.getResources().getString(R.string.empty);
-
-        if (currentOrder != null){
-            try {
-                account = Utils.getStringValue(currentOrder, OrderObject.CLIENT_NAME);
-                sfid = currentOrder.getString(OrderObject.SFID);
-                show = android.text.Html.fromHtml(currentOrder.getString(OrderObject.SHOW_NAME)).toString();
-            } catch (JSONException e) {
-                Utils.showSnackbar(coordinatorLayout, "Couldn't output order information");
-            }
-        }
-
-        collapsingToolbar.setTitle(sfidTitle + sfid);
-        subtitle.setText(account + "@" + show);
-    }
-
-    private void loadDataFromDB(){
-
-        int position = 0;
-
-        try {
-            OrderDetails details = new OrderDetails(currentOrder.getLong(SmartStore.SOUP_ENTRY_ID));
-
-            if(Utils.isCurrentTaskRunning(this)){
-                hideStartNewTaskButton();
-            }
-
-            for (OrderDetailsSections section : details.getDetailsSection()){
-                if (section.getListItems().size() > 0) {
-                    cards.add(section);
-                    section.init();
-
-                    cardArrayAdapter.notifyItemInserted(position);
-                    position++;
-                }
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
     @OnClick(R.id.start_new_task)
     public void startTask(View view) {
         try {
-            JSONObject newTaskEntry = TimeObject.createTimeObjectStartedNow(
-                    currentOrder.getString(Constants.ID),
-                    currentOrder.getString(TimeObject.PHASE));
-
-            JSONObject createdTaskEntry = Utils.saveToSmartStore(TimeObject.TIME_SUPE, newTaskEntry);
-
-            Utils.addCurrentTask(this, createdTaskEntry.getString(SmartStore.SOUP_ENTRY_ID));
-            Utils.addCurrentOrder(this, currentOrder);
-            NotificationHelper.createNotification(this, currentOrder);
-
-        } catch (JSONException e) {
-            Utils.showSnackbar(coordinatorLayout, "Wasn't able to create task");
+            Time savedTime = DbManager.getInstance().startTask(order.getId(), phase);
+            PreferencesManager.getInstance().setCurrents(order.getEntyId(), savedTime.getEntyId());
+            NotificationHelper.createNotification(this, order);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, getString(R.string.toast_cant_start), Toast.LENGTH_LONG).show();
         }
+    }
+
+    @OnClick(R.id.camear)
+    public void takePicture(View view) {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        photoFile = new File(Utils.getPhotosPath(this), Utils.buildPhotosName());
+        Uri uri = Uri.fromFile(photoFile);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+        intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
+        startActivityForResult(intent, 0);
     }
 
     private void hideStartNewTaskButton(){
@@ -194,6 +159,7 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
 
     private void addCardToPosition(Card card, int position){
         cards.add(position, card);
+        cardArrayAdapter.notifyItemChanged(position);
         cardArrayAdapter.notifyItemInserted(position);
         recyclerView.scrollToPosition(position);
     }
@@ -206,15 +172,98 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(Utils.CURRENT_ORDER)) {
-            if(Utils.isCurrentTaskRunning(this)){
+        if (key.equals(PreferencesManager.CURRENT_TASK_KEY)) {
+            if(PreferencesManager.getInstance().isCurrentTaskRunning()){
                 hideStartNewTaskButton();
             }else{
                 showStartNewTaskButton();
 
-                Intent mServiceIntent = new Intent(getApplicationContext(), TimesSyncService.class);
-                startService(mServiceIntent);
+                /*Intent mServiceIntent = new Intent(getApplicationContext(), TimesSyncService.class);
+                startService(mServiceIntent);*/
             }
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch(requestCode) {
+            case 0:
+                switch(resultCode) {
+                    case Activity.RESULT_OK:
+                        if (photoFile.exists()) {
+                            uploadFile(photoFile, phase, order);
+
+                        } else {
+                            Toast.makeText(this,
+                                    getString(R.string.toast_total_failure),
+                                    Toast.LENGTH_LONG).show();
+                        }
+                        break;
+                    case Activity.RESULT_CANCELED:
+                        break;
+                    default:
+                        Toast.makeText(this,
+                                getString(R.string.toast_unsupported_code) + resultCode,
+                                Toast.LENGTH_LONG).show();
+                }
+                break;
+            default:
+                Toast.makeText(this, getString(R.string.toast_error), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void uploadFile(final File file, final String phase, final Order order){
+        try {
+            String dropboxRootFolder = order.getDecodedDropboxLink();
+            final String dropboxFullPath = dropboxRootFolder + "/" + phase + "/" + file.getName();
+
+            Toast.makeText(OrderDetailsActivity.this,
+                    getString(R.string.toast_uploading),
+                    Toast.LENGTH_SHORT)
+                    .show();
+
+            new UploadFileTask(this, DropboxClientFactory.getClient(), new UploadFileTask.Callback() {
+                @Override
+                public void onUploadComplete(FileMetadata result) {
+                    Toast.makeText(OrderDetailsActivity.this,
+                            getString(R.string.toast_uploaded),
+                            Toast.LENGTH_SHORT).show();
+
+                    file.delete();
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(OrderDetailsActivity.this,
+                            getString(R.string.toast_cant_upload),
+                            Toast.LENGTH_SHORT)
+                            .show();
+
+                    try {
+                        Photo photo = new Photo(photoFile.getAbsolutePath(),
+                                dropboxFullPath,
+                                phase,
+                                order.getEntyIdInString());
+                        DbManager.getInstance().savePhoto(photo);
+                        Toast.makeText(OrderDetailsActivity.this,
+                                getString(R.string.toast_saved_locally),
+                                Toast.LENGTH_SHORT)
+                                .show();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        Toast.makeText(OrderDetailsActivity.this,
+                                getString(R.string.toast_total_failure),
+                                Toast.LENGTH_LONG).show();
+                    }
+
+                }
+            }).execute(file.getAbsolutePath(), dropboxFullPath);
+        }catch (UnsupportedEncodingException ue) {
+            ue.printStackTrace();
+            Toast.makeText(this,
+                    getString(R.string.toast_bad_dropbox_link),
+                    Toast.LENGTH_LONG).show();
         }
     }
 
@@ -224,4 +273,60 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
             Utils.showSnackbar(intent, coordinatorLayout, Utils.SYNC_BROADCAST_MESSAGE_KEY);
         }
     };
+
+    private class DataLoader extends AsyncTask<Long, Integer, String> {
+
+        Order currentOrder;
+
+        @Override
+        protected String doInBackground(Long... params) {
+
+            try {
+                if (params[0] > 0) {
+                    currentOrder = DbManager.getInstance().getOrderObject(params[0]);
+                }else{
+                    currentOrder = DbManager.getInstance().getOrderObject();
+                }
+
+            } catch (JSONException jsonex) {
+                jsonex.printStackTrace();
+            } catch (IOException ioex) {
+                ioex.printStackTrace();
+            }
+            return currentOrder.getId();
+        }
+
+        protected void onPostExecute(String result) {
+            setTitles(currentOrder);
+            loadDataFromDB(currentOrder);
+            order = this.currentOrder;
+
+            if (order.getDropboxLink() != null && !order.getDropboxLink().equals("")){
+                camera.setVisibility(View.VISIBLE);
+            }
+        }
+
+        private void setTitles(Order order){
+            collapsingToolbar.setTitle(sfidTitle + order.getSfid());
+            subtitle.setText(order.getOrderTitle());
+        }
+
+        private void loadDataFromDB(Order order){
+
+            int position = cards.size();
+            OrderDetails details = new OrderDetails(order);
+
+            for (OrderDetailsSections section : details.getDetailsSection()){
+                if (section.getListItems().size() > 0) {
+                    cards.add(section);
+                    section.init();
+
+                    cardArrayAdapter.notifyItemInserted(position);
+                    position++;
+                }
+            }
+
+        }
+
+    }
 }

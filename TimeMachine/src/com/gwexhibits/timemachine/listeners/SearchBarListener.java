@@ -9,11 +9,17 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.gwexhibits.timemachine.OrderDetailsActivity;
 import com.gwexhibits.timemachine.R;
 import com.gwexhibits.timemachine.fragments.StagePopUp;
 import com.gwexhibits.timemachine.objects.OrderDetails;
+import com.gwexhibits.timemachine.objects.pojo.Attribute;
+import com.gwexhibits.timemachine.objects.pojo.Order;
+import com.gwexhibits.timemachine.objects.pojo.Views;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
+import com.gwexhibits.timemachine.objects.sf.PhotoObject;
 import com.gwexhibits.timemachine.objects.sf.TimeObject;
 import com.gwexhibits.timemachine.utils.Utils;
 import com.quinny898.library.persistentsearch.SearchBox;
@@ -26,8 +32,8 @@ import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -40,10 +46,17 @@ public class SearchBarListener implements SearchBox.SearchListener {
     private SmartStore smartStore;
     private Context context;
 
+    private ObjectMapper mapper;
+    private final ObjectReader jsonReader;
+
     public SearchBarListener(SearchBox search, Context context){
         searchBox = search;
         account = SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser();
         this.context = context;
+
+        mapper = new ObjectMapper();
+        mapper.writerWithView(Views.Full.class);
+        jsonReader = mapper.reader(Order.class);
     }
 
     @Override
@@ -51,6 +64,7 @@ public class SearchBarListener implements SearchBox.SearchListener {
         smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);
         smartStore.registerSoup(TimeObject.TIME_SUPE, TimeObject.TIMES_INDEX_SPEC);
         smartStore.registerSoup(OrderObject.ORDER_SUPE, OrderObject.ORDERS_INDEX_SPEC);
+        smartStore.registerSoup(PhotoObject.PHOTOS_SUPE, PhotoObject.PHOTOS_INDEX_SPEC);
     }
 
     @Override
@@ -76,13 +90,15 @@ public class SearchBarListener implements SearchBox.SearchListener {
             JSONArray array = smartStore.query(querySpec, 0);
 
             for(int i = 0; i < array.length(); i++ ){
-                results.add(createOption(array.getJSONObject(i)));
+                results.add(createOption((Order)jsonReader.readValue(array.getJSONObject(i).toString())));
             }
         } catch (JSONException e) {
             //TODO: Show error
             Log.e("Error", e.getMessage());
         }catch (SmartSqlHelper.SmartSqlException smartStoreException){
             Log.e("Error", smartStoreException.getMessage());
+        }catch (IOException ioe){
+            Log.e("Error", ioe.getMessage());
         }
 
         searchBox.addAllResults(results);
@@ -95,44 +111,35 @@ public class SearchBarListener implements SearchBox.SearchListener {
     @Override
     public void onResultClick(SearchResult result) {
 
-        try {
-            String[] list = OrderObject.getPhasesForType(result.value.getString(OrderObject.ORDER_TYPE));
 
-            if(list.length > 1){
-                FragmentActivity activity = (FragmentActivity) context;
+        String[] list = OrderObject.getPhasesForType(((Order)result.value).getOrderType());
 
-                DialogFragment phaseDialog = new StagePopUp();
-                Bundle bundle = new Bundle();
-                bundle.putString(OrderDetailsActivity.ORDER_KEY, result.value.toString());
-                bundle.putStringArray(StagePopUp.LIST_OF_PHASES_KEY, list);
-                phaseDialog.setArguments(bundle);
-                phaseDialog.show(activity.getSupportFragmentManager(),
-                        context.getString(R.string.stage_dialog_tag));
-            }else{
-                Intent showOrderDetails = new Intent(context, OrderDetailsActivity.class);
-                showOrderDetails.putExtra(OrderDetailsActivity.ORDER_KEY, result.value.toString());
-                showOrderDetails.putExtra(OrderDetailsActivity.PHASE_KEY, list[0]);
-                context.startActivity(showOrderDetails);
-            }
+        if(list.length > 1){
+            FragmentActivity activity = (FragmentActivity) context;
 
-        } catch (JSONException e) {
-            e.printStackTrace();
+            DialogFragment phaseDialog = new StagePopUp();
+            Bundle bundle = new Bundle();
+            bundle.putSerializable(OrderDetailsActivity.ORDER_KEY, ((Order) result.value).getEntyId());
+            bundle.putStringArray(StagePopUp.LIST_OF_PHASES_KEY, list);
+            phaseDialog.setArguments(bundle);
+            phaseDialog.show(activity.getSupportFragmentManager(),
+                    context.getString(R.string.stage_dialog_tag));
+        }else{
+            Intent showOrderDetails = new Intent(context, OrderDetailsActivity.class);
+            showOrderDetails.putExtra(OrderDetailsActivity.ORDER_KEY, ((Order) result.value).getEntyId());
+            showOrderDetails.putExtra(OrderDetailsActivity.PHASE_KEY, list[0]);
+            context.startActivity(showOrderDetails);
         }
-        Log.d("TAG", "On result click");
 
+        Log.d("TAG", "On result click");
     }
 
-    private SearchResult createOption(JSONObject object) throws JSONException {
+    private SearchResult createOption(Order order) throws JSONException {
 
-        String account = Utils.getStringValue(object, OrderObject.CLIENT_NAME);
-        String sfid = object.getString(OrderObject.SFID);
-        String show = android.text.Html.fromHtml(object.getString(OrderObject.SHOW_NAME)).toString();
-        String orderNumber = object.getString(OrderObject.ORDER_NUMBER).replaceFirst("^0+(?!$)", "");
-
-        String title = sfid + " (*" + orderNumber + ") " + account + "@" + show;
+        String title = order.getTitleForOptions();
         int icon;
 
-        switch (object.getString(OrderObject.ORDER_TYPE)){
+        switch (order.getOrderType()){
             case "Workorder":
                 title = "(WoW) " + title;
                 icon = R.drawable.ic_work_black_24dp;
@@ -159,7 +166,6 @@ public class SearchBarListener implements SearchBox.SearchListener {
                 break;
         }
 
-        return new SearchResult(title, object, ContextCompat.getDrawable(context, icon));
-
+        return new SearchResult(title, order, ContextCompat.getDrawable(context, icon));
     }
 }

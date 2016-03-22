@@ -3,6 +3,7 @@
 
     <!--General-->
     <string name="account_type">com.gwexhibits.timemachine.login</string>
+    <string name="app_key">dy4k23ukfavt3dc</string>
     <string name="app_name">TimeMachine</string>
     <string name="app_package">com.gwexhibits.timemachine</string>
     <string name="error_message">Something went wrong</string>
@@ -43,5 +44,24 @@
     <string name="notification_client">for %1$s</string>
     <string name="notification_show">in %1$s</string>
     <string name="notification_duration">Task is running for about %1$s!h</string>
+    <string name="notification_photo_uploading">Photo is uploading &#8230;</string>
+    <string name="notification_upload_failed">Uploading to DropBox has failed !</string>
+    <string name="notification_uploaded">Upload finished</string>
+    <string name="notification_progress">Uploaded %1$s out of %2$s</string>
+
+
+    <!--Toast -->
+    <string name="toast_saved_locally">Photo is saved locally</string>
+    <string name="toast_total_failure">Something went wrong. Picture is not saved !!!</string>
+    <string name="toast_uploaded">Picture is uploaded</string>
+    <string name="toast_uploading">Uploading &#8230;</string>
+    <string name="toast_bad_dropbox_link">Can\'t get correct dropbox link !</string>
+    <string name="toast_cant_upload">Can\'t upload to DropBox !</string>
+    <string name="toast_unsupported_code">Unexpected resultCode: </string>
+    <string name="toast_error">Unexpected error</string>
+    <string name="toast_cant_start">Error, task is not started</string>
+    <string name="toast_dropbox_auth_problem">Error with accessing DropBox</string>
+    <string name="toast_file_not_found">File is not found !</string>
+    <string name="toast_cant_read_from_db">Can\'t read from locacl DB</string>
 
 </resources>

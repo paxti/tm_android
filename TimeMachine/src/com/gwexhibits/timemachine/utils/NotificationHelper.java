@@ -12,6 +12,7 @@ import com.gwexhibits.timemachine.OrderDetailsActivity;
 import com.gwexhibits.timemachine.R;
 import com.gwexhibits.timemachine.broadcast.NotificationReceiver;
 import com.gwexhibits.timemachine.objects.OrderDetails;
+import com.gwexhibits.timemachine.objects.pojo.Order;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
 
 import org.json.JSONException;
@@ -23,9 +24,9 @@ import org.json.JSONObject;
 public class NotificationHelper {
 
     private static final Integer NOTIFICATION_ID = 53431;
+    public static final Integer PROGRESS = 52221;
 
-    public static void createNotification(Context context, JSONObject currentOrder){
-
+    public static void createNotification(Context context, Order currentOrder){
 
         Intent showOrderDetails = new Intent(context, OrderDetailsActivity.class);
         showOrderDetails.putExtra(OrderDetailsActivity.ORDER_KEY, currentOrder.toString());
@@ -34,19 +35,6 @@ public class NotificationHelper {
 
         Intent stopTaskBroadcast = new Intent(context, NotificationReceiver.class);
         PendingIntent stopTask = PendingIntent.getBroadcast(context, 1, stopTaskBroadcast, 0);
-
-
-        String sfid = context.getString(R.string.error_message);
-        String client = "";
-        String show = "";
-
-        try {
-            sfid = currentOrder.getString(OrderObject.SFID);
-            client = Utils.getStringValue(currentOrder, OrderObject.CLIENT_NAME);
-            show = Html.fromHtml(currentOrder.getString(OrderObject.SHOW_NAME)).toString();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
 
         NotificationCompat.Builder notificationBuilder  = new NotificationCompat.Builder(context)
                 .setContentTitle(context.getString(R.string.app_name))
@@ -66,9 +54,9 @@ public class NotificationHelper {
 
         NotificationCompat.InboxStyle richNotification = new NotificationCompat.InboxStyle(
                 notificationBuilder)
-                .addLine(String.format(context.getString(R.string.notification_sfid), sfid))
-                .addLine(String.format(context.getString(R.string.notification_client), client))
-                .addLine(String.format(context.getString(R.string.notification_show), show))
+                .addLine(String.format(context.getString(R.string.notification_sfid), currentOrder.getSfid()))
+                .addLine(String.format(context.getString(R.string.notification_client), currentOrder.getAccount().getName()))
+                .addLine(String.format(context.getString(R.string.notification_show), Html.fromHtml(currentOrder.getShowName())))
                 /*.setSummaryText(String.format(context.getString(R.string.notification_duration), "1"))*/;
 
 
@@ -83,6 +71,34 @@ public class NotificationHelper {
         NotificationManager notificationManager =
                 (NotificationManager) context.getSystemService(context.NOTIFICATION_SERVICE);
         notificationManager.cancel(NOTIFICATION_ID);
+    }
+
+
+    public static NotificationCompat.Builder getNotificationBuilder(Context context){
+
+        return new NotificationCompat.Builder(context)
+                .setContentTitle(context.getString(R.string.app_name))
+                .setContentText(context.getString(R.string.notification_photo_uploading))
+                .setSmallIcon(R.drawable.sf__icon)
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.COLOR_DEFAULT)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setProgress(100,0,true);
+
+    }
+    public static void buildUploadNotification(Context context){
+        NotificationCompat.Builder notificationBuilder  = getNotificationBuilder(context);
+
+        NotificationCompat.Style s = notificationBuilder.mStyle;
+        NotificationCompat.InboxStyle richNotification = new NotificationCompat.InboxStyle(notificationBuilder);
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(context.NOTIFICATION_SERVICE);
+        notificationManager.notify(NotificationHelper.PROGRESS, richNotification.build());
+    }
+
+    public static void updateUploadNotification(Context context, NotificationCompat.Builder notificationBuilder){
+        NotificationCompat.InboxStyle richNotification = new NotificationCompat.InboxStyle(notificationBuilder);
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(context.NOTIFICATION_SERVICE);
+        notificationManager.notify(NotificationHelper.PROGRESS, richNotification.build());
     }
 
 }
