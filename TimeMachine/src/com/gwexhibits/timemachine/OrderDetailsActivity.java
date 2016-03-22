@@ -20,7 +20,9 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.dropbox.core.v2.files.FileMetadata;
 import com.gwexhibits.timemachine.async.DropboxUploader;
+import com.gwexhibits.timemachine.async.UploadFileTask;
 import com.gwexhibits.timemachine.cards.OrderDetailsSections;
 import com.gwexhibits.timemachine.cards.TaskStatusCard;
 import com.gwexhibits.timemachine.objects.OrderDetails;
@@ -28,6 +30,7 @@ import com.gwexhibits.timemachine.objects.pojo.Order;
 import com.gwexhibits.timemachine.objects.pojo.Photo;
 import com.gwexhibits.timemachine.objects.pojo.Time;
 import com.gwexhibits.timemachine.utils.DbManager;
+import com.gwexhibits.timemachine.utils.DropboxClientFactory;
 import com.gwexhibits.timemachine.utils.NotificationHelper;
 import com.gwexhibits.timemachine.utils.PreferencesManager;
 import com.gwexhibits.timemachine.utils.Utils;
@@ -37,6 +40,7 @@ import org.json.JSONException;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
 import java.util.ArrayList;
 
 import butterknife.Bind;
@@ -187,35 +191,8 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
                 switch(resultCode) {
                     case Activity.RESULT_OK:
                         if (photoFile.exists()) {
-                            String fileName =  photoFile.getName();
-                            try {
-                                String dropboxRootFolder = order.getDecodedDropboxLink();
-                                String dropboxFullPath = dropboxRootFolder + "/" + phase + "/" + fileName;
+                            uploadFile(photoFile, phase, order);
 
-                                if (Utils.isInternetAvailable(getApplicationContext())){
-                                    DropboxUploader uploader = new DropboxUploader(this);
-                                    uploader.execute(photoFile.getAbsolutePath(),
-                                            dropboxFullPath,
-                                            order.getEntyIdInString(),
-                                            phase);
-                                }else{
-                                    Photo photo = new Photo(photoFile.getAbsolutePath(),
-                                            dropboxFullPath,
-                                            phase,
-                                            order.getEntyIdInString());
-                                    DbManager.getInstance().savePhoto(photo);
-                                }
-                            } catch (UnsupportedEncodingException ue) {
-                                ue.printStackTrace();
-                                Toast.makeText(this,
-                                        getString(R.string.toast_bad_dropbox_link),
-                                        Toast.LENGTH_LONG).show();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                Toast.makeText(this,
-                                        getString(R.string.toast_total_failure),
-                                        Toast.LENGTH_LONG).show();
-                            }
                         } else {
                             Toast.makeText(this,
                                     getString(R.string.toast_total_failure),
@@ -232,6 +209,61 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
                 break;
             default:
                 Toast.makeText(this, getString(R.string.toast_error), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void uploadFile(final File file, final String phase, final Order order){
+        try {
+            String dropboxRootFolder = order.getDecodedDropboxLink();
+            final String dropboxFullPath = dropboxRootFolder + "/" + phase + "/" + file.getName();
+
+            Toast.makeText(OrderDetailsActivity.this,
+                    getString(R.string.toast_uploading),
+                    Toast.LENGTH_SHORT)
+                    .show();
+
+            new UploadFileTask(this, DropboxClientFactory.getClient(), new UploadFileTask.Callback() {
+                @Override
+                public void onUploadComplete(FileMetadata result) {
+                    Toast.makeText(OrderDetailsActivity.this,
+                            getString(R.string.toast_uploaded),
+                            Toast.LENGTH_SHORT).show();
+
+                    file.delete();
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(OrderDetailsActivity.this,
+                            getString(R.string.toast_cant_upload),
+                            Toast.LENGTH_SHORT)
+                            .show();
+
+                    try {
+                        Photo photo = new Photo(photoFile.getAbsolutePath(),
+                                dropboxFullPath,
+                                phase,
+                                order.getEntyIdInString());
+                        DbManager.getInstance().savePhoto(photo);
+                        Toast.makeText(OrderDetailsActivity.this,
+                                getString(R.string.toast_saved_locally),
+                                Toast.LENGTH_SHORT)
+                                .show();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        Toast.makeText(OrderDetailsActivity.this,
+                                getString(R.string.toast_total_failure),
+                                Toast.LENGTH_LONG).show();
+                    }
+
+                }
+            }).execute(file.getAbsolutePath(), dropboxFullPath);
+        }catch (UnsupportedEncodingException ue) {
+            ue.printStackTrace();
+            Toast.makeText(this,
+                    getString(R.string.toast_bad_dropbox_link),
+                    Toast.LENGTH_LONG).show();
         }
     }
 

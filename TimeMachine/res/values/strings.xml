@@ -3,6 +3,7 @@
 
     <!--General-->
     <string name="account_type">com.gwexhibits.timemachine.login</string>
+    <string name="app_key">dy4k23ukfavt3dc</string>
     <string name="app_name">TimeMachine</string>
     <string name="app_package">com.gwexhibits.timemachine</string>
     <string name="error_message">Something went wrong</string>
@@ -46,10 +47,11 @@
     <string name="notification_photo_uploading">Photo is uploading &#8230;</string>
     <string name="notification_upload_failed">Uploading to DropBox has failed !</string>
     <string name="notification_uploaded">Upload finished</string>
+    <string name="notification_progress">Uploaded %1$s out of %2$s</string>
 
 
     <!--Toast -->
-    <string name="toast_error_while_uploading">Error during uploading ! Photo is saved locally</string>
+    <string name="toast_saved_locally">Photo is saved locally</string>
     <string name="toast_total_failure">Something went wrong. Picture is not saved !!!</string>
     <string name="toast_uploaded">Picture is uploaded</string>
     <string name="toast_uploading">Uploading &#8230;</string>

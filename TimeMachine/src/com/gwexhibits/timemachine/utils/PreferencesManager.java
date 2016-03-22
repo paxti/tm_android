@@ -66,14 +66,10 @@ public class PreferencesManager {
     }
 
     public String getDropBoxToken(){
-        return preferences.getString(DROPBOX_TOKEN_KEY, "");
+        return preferences.getString(DROPBOX_TOKEN_KEY, null);
     }
 
     public boolean isDropBoxTokenSet(){
-        if (getDropBoxToken().length() > 0 ){
-            return true;
-        }else {
-            return false;
-        }
+        return getDropBoxToken() != null;
     }
 }

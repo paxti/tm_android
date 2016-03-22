@@ -2,9 +2,7 @@ package com.gwexhibits.timemachine.utils;
 
 import android.content.Context;
 
-import com.dropbox.client2.DropboxAPI;
-import com.dropbox.client2.android.AndroidAuthSession;
-import com.dropbox.client2.session.AppKeyPair;
+
 import com.gwexhibits.timemachine.services.DropboxService;
 import com.salesforce.androidsdk.app.SalesforceSDKManager;
 
@@ -18,22 +16,22 @@ public class DropBoxHelper {
 
     private static DropBoxHelper ourInstance = new DropBoxHelper();
 
-    private DropboxAPI<AndroidAuthSession> dbAPI;
+//    private DropboxAPI<AndroidAuthSession> dbAPI;
 
     public static DropBoxHelper getInstance() {
         return ourInstance;
     }
 
     private DropBoxHelper() {
-        AndroidAuthSession session = buildSession();
-        dbAPI = new DropboxAPI<AndroidAuthSession>(session);
+//        AndroidAuthSession session = buildSession();
+//        dbAPI = new DropboxAPI<AndroidAuthSession>(session);
     }
 
-    public DropboxAPI<AndroidAuthSession> getAPI(){
-        return dbAPI;
-    }
+//    public DropboxAPI<AndroidAuthSession> getAPI(){
+//        return dbAPI;
+//    }
 
-    private AndroidAuthSession buildSession() {
+    /*private AndroidAuthSession buildSession() {
         AppKeyPair appKeyPair = new AppKeyPair(APP_KEY, APP_SECRET);
 
         AndroidAuthSession session = new AndroidAuthSession(appKeyPair);
@@ -51,5 +49,5 @@ public class DropBoxHelper {
             dbAPI = new DropboxAPI<AndroidAuthSession>(session);
             dbAPI.getSession().startOAuth2Authentication(SalesforceSDKManager.getInstance().getAppContext());
         }
-    }
+    }*/
 }

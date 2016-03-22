@@ -1,52 +1,30 @@
 package com.gwexhibits.timemachine.services;
 
 import android.app.IntentService;
-import android.app.NotificationManager;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
+import android.text.Html;
+import android.util.Log;
 import android.widget.Toast;
 
-import com.dropbox.client2.DropboxAPI;
-import com.dropbox.client2.android.AndroidAuthSession;
-import com.dropbox.client2.exception.DropboxException;
-import com.dropbox.client2.session.AppKeyPair;
+import com.dropbox.core.v2.files.FileMetadata;
 import com.gwexhibits.timemachine.R;
+import com.gwexhibits.timemachine.async.UploadFileTask;
 import com.gwexhibits.timemachine.objects.pojo.Photo;
-import com.gwexhibits.timemachine.objects.sf.PhotoObject;
 import com.gwexhibits.timemachine.utils.DbManager;
-import com.gwexhibits.timemachine.utils.DropBoxHelper;
+import com.gwexhibits.timemachine.utils.DropboxClientFactory;
 import com.gwexhibits.timemachine.utils.NotificationHelper;
-import com.gwexhibits.timemachine.utils.PreferencesManager;
-import com.gwexhibits.timemachine.utils.Utils;
-import com.salesforce.androidsdk.accounts.UserAccount;
-import com.salesforce.androidsdk.smartstore.store.QuerySpec;
-import com.salesforce.androidsdk.smartstore.store.SmartSqlHelper;
-import com.salesforce.androidsdk.smartstore.store.SmartStore;
-import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
-import com.salesforce.androidsdk.smartsync.manager.SyncManager;
-import com.salesforce.androidsdk.smartsync.util.Constants;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Created by psyfu on 3/15/2016.
  */
 public class DropboxService extends IntentService {
 
-    NotificationCompat.Builder notificationBuilder;
-
-    private DropboxAPI<AndroidAuthSession> mDBApi;
+    private NotificationCompat.Builder notificationBuilder;
+    private int progress = 0;
 
     public DropboxService(){
         super(DropboxService.class.getName());
@@ -56,52 +34,56 @@ public class DropboxService extends IntentService {
     protected void onHandleIntent(Intent intent) {
 
         notificationBuilder = NotificationHelper.getNotificationBuilder(this);
-        mDBApi = DropBoxHelper.getInstance().getAPI();
-
-        List<Photo> photos = new ArrayList<>();
+        notificationBuilder.setProgress(100, 1, true);
+        NotificationHelper.updateUploadNotification(DropboxService.this, notificationBuilder);
 
         try {
-            photos = DbManager.getInstance().getAllNotUploadedPhotos();
+            List<Photo> photos = DbManager.getInstance().getAllNotUploadedPhotos();
             uploadFiles(photos);
         }catch (Exception ex){
             ex.printStackTrace();
             Toast.makeText(this, getString(R.string.toast_cant_read_from_db), Toast.LENGTH_LONG).show();
+
+            notificationBuilder.setContentText(this.getString(R.string.notification_upload_failed));
+            notificationBuilder.setProgress(1, 1, false);
+            NotificationHelper.updateUploadNotification(this, notificationBuilder);
         }
     }
 
     public void uploadFiles(List<Photo> photos){
+        final int size = photos.size();
+        for(final Photo photo : photos){
+            final File file = new File(photo.getLocalPath());
 
-        int i = 0;
-        int size = photos.size();
-        FileInputStream inputStream = null;
-        for(Photo photo : photos){
-            try {
-                File file = new File(photo.getLocalPath());
-                inputStream = new FileInputStream(file);
-                mDBApi.putFile(photo.getDropboxPath(), inputStream, size, null, null);
-                DbManager.getInstance().deletePhoto(photo);
-                file.delete();
-            } catch (DropboxException dex) {
-                dex.printStackTrace();
-                Toast.makeText(this, getString(R.string.toast_cant_upload), Toast.LENGTH_LONG).show();
-            }catch (FileNotFoundException fex) {
-                fex.printStackTrace();
-                Toast.makeText(this, getString(R.string.toast_file_not_found), Toast.LENGTH_LONG).show();
-            }finally {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+            new UploadFileTask(this, DropboxClientFactory.getClient(), new UploadFileTask.Callback() {
+                @Override
+                public void onUploadComplete(FileMetadata result) {
+                    DbManager.getInstance().deletePhoto(photo);
+                    file.delete();
+
+                    if (++progress == size) {
+                        notificationBuilder.setProgress(size, size, false);
+                        notificationBuilder.setContentText(getString(R.string.notification_uploaded));
+                    }else{
+                        notificationBuilder.setProgress(size, progress, true);
+
+                        notificationBuilder.setContentText(
+                                String.format(getString(R.string.notification_progress),
+                                        progress, size)
+                        );
+                    }
+                    NotificationHelper.updateUploadNotification(DropboxService.this, notificationBuilder);
                 }
-                notificationBuilder.setProgress(size, i, true);
-                NotificationHelper.updateUploadNotification(this, notificationBuilder);
-                i++;
-            }
+
+                @Override
+                public void onError(Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(DropboxService.this,
+                            getString(R.string.toast_cant_upload),
+                            Toast.LENGTH_LONG).show();
+                    progress++;
+                }
+            }).execute(file.getAbsolutePath(), photo.getDropboxPath());
         }
-
-        notificationBuilder.setContentText(this.getString(R.string.notification_uploaded));
-        notificationBuilder.setProgress(1, 1, false);
-        NotificationHelper.updateUploadNotification(this, notificationBuilder);
     }
-
 }

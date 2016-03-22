@@ -5,8 +5,6 @@ import android.os.AsyncTask;
 import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
-import com.dropbox.client2.DropboxAPI;
-import com.dropbox.client2.android.AndroidAuthSession;
 import com.gwexhibits.timemachine.R;
 import com.gwexhibits.timemachine.objects.pojo.Photo;
 import com.gwexhibits.timemachine.utils.DbManager;
@@ -22,7 +20,7 @@ import java.io.FileInputStream;
 public class DropboxUploader extends AsyncTask<String, String, String> {
 
 
-    private DropboxAPI<AndroidAuthSession> mDBApi;
+//    private DropboxAPI<AndroidAuthSession> mDBApi;
     private Context context;
     private NotificationCompat.Builder notification;
 
@@ -39,19 +37,19 @@ public class DropboxUploader extends AsyncTask<String, String, String> {
         String orderId = params[2];
         String phase = params[3];
 
-        mDBApi = DropBoxHelper.getInstance().getAPI();
+//        mDBApi = DropBoxHelper.getInstance().getAPI();
 
         File file = new File(localPath);
         FileInputStream inputStream = null;
         try {
             inputStream = new FileInputStream(file);
-            mDBApi.putFile(dropboxPath, inputStream, file.length(), null, null);
+//            mDBApi.putFile(dropboxPath, inputStream, file.length(), null, null);
             file.delete();
         } catch (Exception e) {
             try {
                 Photo newPhoto = new Photo(localPath, dropboxPath, orderId, phase);
                 DbManager.getInstance().savePhoto(newPhoto);
-                return context.getString(R.string.toast_error_while_uploading);
+                return context.getString(R.string.app_name);
             } catch (Exception e1) {
                 return context.getString(R.string.toast_total_failure);
             }

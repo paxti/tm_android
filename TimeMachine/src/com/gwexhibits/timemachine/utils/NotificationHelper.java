@@ -28,7 +28,6 @@ public class NotificationHelper {
 
     public static void createNotification(Context context, Order currentOrder){
 
-
         Intent showOrderDetails = new Intent(context, OrderDetailsActivity.class);
         showOrderDetails.putExtra(OrderDetailsActivity.ORDER_KEY, currentOrder.toString());
         PendingIntent goToOrder = PendingIntent.getActivity(

@@ -6,59 +6,28 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import com.baoyz.widget.PullRefreshLayout;
-import com.dropbox.client2.DropboxAPI;
-import com.dropbox.client2.android.AndroidAuthSession;
-import com.dropbox.client2.session.AppKeyPair;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
+import com.dropbox.core.android.Auth;
 import com.gwexhibits.timemachine.listeners.SearchBarListener;
-import com.gwexhibits.timemachine.objects.pojo.Order;
-import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.services.DropboxService;
 import com.gwexhibits.timemachine.services.OrdersSyncService;
-import com.gwexhibits.timemachine.utils.DropBoxHelper;
 import com.gwexhibits.timemachine.utils.PreferencesManager;
 import com.gwexhibits.timemachine.utils.Utils;
 import com.quinny898.library.persistentsearch.SearchBox;
-import com.salesforce.androidsdk.accounts.UserAccount;
-import com.salesforce.androidsdk.accounts.UserAccountManager;
-import com.salesforce.androidsdk.app.SalesforceSDKManager;
-import com.salesforce.androidsdk.rest.ClientManager;
 import com.salesforce.androidsdk.rest.RestClient;
-import com.salesforce.androidsdk.security.PasscodeManager;
-import com.salesforce.androidsdk.smartstore.store.SmartStore;
 import com.salesforce.androidsdk.smartstore.ui.SmartStoreInspectorActivity;
-import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
-import com.salesforce.androidsdk.smartsync.manager.SyncManager;
-import com.salesforce.androidsdk.util.EventsObservable;
-import com.salesforce.androidsdk.util.UserSwitchReceiver;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class SearchActivity extends AppCompatActivity{
-
-    private PasscodeManager passcodeManager;
-    private UserSwitchReceiver userSwitchReceiver;
+public class SearchActivity extends SalesforceDropboxActivity {
 
     private RestClient client;
-    private DropboxAPI<AndroidAuthSession> dbAPI;
 
     @Bind(R.id.swipeRefreshLayout) PullRefreshLayout swipeRefreshLayout;
     @Bind(R.id.main_relative) RelativeLayout relativeLayout;
@@ -67,20 +36,8 @@ public class SearchActivity extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Gets an instance of the passcode manager.
-        passcodeManager = SalesforceSDKManager.getInstance().getPasscodeManager();
-        userSwitchReceiver = new ActivityUserSwitchReceiver();
-        registerReceiver(userSwitchReceiver, new IntentFilter(UserAccountManager.USER_SWITCH_INTENT_ACTION));
-        PreferencesManager.initializeInstance(this);
-
-        // Lets observers know that activity creation is complete.
-        EventsObservable.get().notifyEvent(EventsObservable.EventType.MainActivityCreateComplete, this);
-
         setContentView(R.layout.activity_search);
         ButterKnife.bind(this);
-
-        dbAPI = DropBoxHelper.getInstance().getAPI();
 
         swipeRefreshLayout.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
             @Override
@@ -90,6 +47,12 @@ public class SearchActivity extends AppCompatActivity{
                 startService(mServiceIntent);
             }
         });
+
+        PreferencesManager.initializeInstance(this);
+        if(!PreferencesManager.getInstance().isDropBoxTokenSet()) {
+            Auth.startOAuth2Authentication(SearchActivity.this, getString(R.string.app_key));
+        }
+
         swipeRefreshLayout.setRefreshStyle(PullRefreshLayout.STYLE_MATERIAL);
         search.setInputType(InputType.TYPE_CLASS_NUMBER);
         search.setSearchListener(new SearchBarListener(search, this));
@@ -99,46 +62,7 @@ public class SearchActivity extends AppCompatActivity{
     @Override
     public void onResume() {
         super.onResume();
-
-        // Brings up the passcode screen if needed.
-        if (passcodeManager.onResume(this)) {
-
-            // Gets login options.
-            final String accountType = SalesforceSDKManager.getInstance().getAccountType();
-            final ClientManager.LoginOptions loginOptions = SalesforceSDKManager.getInstance().getLoginOptions();
-            AndroidAuthSession session = dbAPI.getSession();
-            // Gets a rest client.
-            new ClientManager(this, accountType, loginOptions,
-                    SalesforceSDKManager.getInstance().shouldLogoutWhenTokenRevoked()).getRestClient(this, new ClientManager.RestClientCallback() {
-
-                @Override
-                public void authenticatedRestClient(RestClient client) {
-                    if (client == null) {
-                        SalesforceSDKManager.getInstance().logout(SearchActivity.this);
-                        return;
-                    }
-                    onResume(client);
-
-                    // Lets observers know that rendition is complete.
-                    EventsObservable.get().notifyEvent(EventsObservable.EventType.RenditionComplete);
-                }
-            });
-        }
-
-        if (dbAPI.getSession().authenticationSuccessful()) {
-            try {
-                // Required to complete auth, sets the access token on the session
-                dbAPI.getSession().finishAuthentication();
-
-                PreferencesManager.getInstance().saveDropBoxToken(dbAPI.getSession().getOAuth2AccessToken());
-            } catch (IllegalStateException e) {
-                e.printStackTrace();
-                Toast.makeText(this, getString(R.string.toast_dropbox_auth_problem), Toast.LENGTH_LONG).show();
-            }
-        }
-
         LocalBroadcastManager.getInstance(this).registerReceiver(syncMessageReceiver, new IntentFilter(Utils.SYNC_BROADCAST_NAME));
-        PreferencesManager.initializeInstance(this);
         if (PreferencesManager.getInstance().isCurrentTaskRunning()){
             Intent showOrderDetails = new Intent(SearchActivity.this, OrderDetailsActivity.class);
             this.startActivity(showOrderDetails);
@@ -148,65 +72,6 @@ public class SearchActivity extends AppCompatActivity{
 
     public void onResume(RestClient client) {
         this.client = client;
-    }
-
-    @Override
-    public void onUserInteraction() {
-        passcodeManager.recordUserInteraction();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        passcodeManager.onPause(this);
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(syncMessageReceiver);
-    }
-
-    @Override
-    public void onDestroy() {
-        unregisterReceiver(userSwitchReceiver);
-        super.onDestroy();
-    }
-
-    /**
-     * Refreshes the client if the user has been switched.
-     */
-    protected void refreshIfUserSwitched() {
-        if (passcodeManager.onResume(this)) {
-
-            // Gets login options.
-            final String accountType = SalesforceSDKManager.getInstance().getAccountType();
-            final ClientManager.LoginOptions loginOptions = SalesforceSDKManager.getInstance().getLoginOptions();
-
-            // Gets a rest client.
-            new ClientManager(this, accountType, loginOptions,
-                    SalesforceSDKManager.getInstance().shouldLogoutWhenTokenRevoked()).getRestClient(this, new ClientManager.RestClientCallback() {
-
-                @Override
-                public void authenticatedRestClient(RestClient client) {
-                    if (client == null) {
-                        SalesforceSDKManager.getInstance().logout(SearchActivity.this);
-                        return;
-                    }
-                    onResume(client);
-
-                    // Lets observers know that rendition is complete.
-                    EventsObservable.get().notifyEvent(EventsObservable.EventType.RenditionComplete);
-                }
-            });
-        }
-    }
-
-    /**
-     * Acts on the user switch event.
-     *
-     * @author bhariharan
-     */
-    private class ActivityUserSwitchReceiver extends UserSwitchReceiver {
-        @Override
-        protected void onUserSwitch() {
-            refreshIfUserSwitched();
-        }
     }
 
     private BroadcastReceiver syncMessageReceiver = new BroadcastReceiver() {
@@ -234,5 +99,4 @@ public class SearchActivity extends AppCompatActivity{
         Intent mServiceIntent = new Intent(this, DropboxService.class);
         startService(mServiceIntent);
     }
-
 }
