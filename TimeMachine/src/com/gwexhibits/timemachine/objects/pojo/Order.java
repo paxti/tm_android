@@ -141,7 +141,8 @@ public class Order implements Serializable {
 
     public String getDecodedDropboxLink() throws UnsupportedEncodingException {
         return URLDecoder.decode(dropboxLink, "UTF-8").toString().
-                replace("https://www.dropbox.com/work", "");
+                replace("https://www.dropbox.com/work", "").
+                replace("https://www.dropbox.com/home", "");
     }
 
     public void setDropboxLink(String dropboxLink) {

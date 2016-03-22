@@ -3,6 +3,7 @@ package com.gwexhibits.timemachine.objects.pojo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gwexhibits.timemachine.objects.sf.PhotoObject;
+import com.salesforce.androidsdk.smartstore.store.SmartStore;
 
 import java.io.Serializable;
 
@@ -13,6 +14,9 @@ import java.io.Serializable;
 public class Photo implements Serializable {
 
     private static final String localFolder = "/data/photos/";
+
+    @JsonProperty(SmartStore.SOUP_ENTRY_ID)
+    private Long entyId;
 
     @JsonProperty(PhotoObject.PATH)
     private String localPath;
@@ -35,6 +39,14 @@ public class Photo implements Serializable {
         setDropboxPath(dropboxPath);
         setPhase(phase);
         setOrder(orderId);
+    }
+
+    public Long getEntyId() {
+        return entyId;
+    }
+
+    public void setEntyId(Long entyId) {
+        this.entyId = entyId;
     }
 
     public String getLocalPath() {
