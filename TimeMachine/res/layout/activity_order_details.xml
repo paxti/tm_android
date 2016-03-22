@@ -75,6 +75,7 @@
         android:layout_gravity="bottom|left"
         android:layout_margin="16dp"
         android:src="@drawable/camera"
+        android:visibility="invisible"
         app:layout_anchorGravity="bottom|left|end" />
 
 

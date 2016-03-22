@@ -47,4 +47,15 @@
     <string name="notification_upload_failed">Uploading to DropBox has failed !</string>
     <string name="notification_uploaded">Upload finished</string>
 
+
+    <!--Toast -->
+    <string name="toast_error_while_uploading">Error during uploading ! Photo is saved locally</string>
+    <string name="toast_total_failure">Something went wrong. Picture is not saved !!!</string>
+    <string name="toast_uploaded">Picture is uploaded</string>
+    <string name="toast_uploading">Uploading ...</string>
+    <string name="toast_bad_dropbox_link">Can't get correct dropbox link</string>
+    <string name="toast_unsupported_code">Unexpected resultCode: </string>
+    <string name="toast_error">Unexpected error</string>
+    <string name="toast_cant_start">Error, task is not started</string>
+
 </resources>

@@ -18,6 +18,7 @@ import com.gwexhibits.timemachine.objects.pojo.Attribute;
 import com.gwexhibits.timemachine.objects.pojo.Order;
 import com.gwexhibits.timemachine.objects.pojo.Views;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
+import com.gwexhibits.timemachine.objects.sf.PhotoObject;
 import com.gwexhibits.timemachine.objects.sf.TimeObject;
 import com.gwexhibits.timemachine.utils.Utils;
 import com.quinny898.library.persistentsearch.SearchBox;
@@ -62,6 +63,7 @@ public class SearchBarListener implements SearchBox.SearchListener {
         smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);
         smartStore.registerSoup(TimeObject.TIME_SUPE, TimeObject.TIMES_INDEX_SPEC);
         smartStore.registerSoup(OrderObject.ORDER_SUPE, OrderObject.ORDERS_INDEX_SPEC);
+        smartStore.registerSoup(PhotoObject.PHOTOS_SUPE, PhotoObject.PHOTOS_INDEX_SPEC);
     }
 
     @Override

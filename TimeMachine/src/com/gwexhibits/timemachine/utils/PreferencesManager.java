@@ -40,10 +40,6 @@ public class PreferencesManager {
         preferences.edit().putLong(CURRENT_TASK_KEY, task).commit();
     }
 
-    public void setDropboxTokenKey(String token) {
-        preferences.edit().putString(DROPBOX_TOKEN_KEY, token).commit();
-    }
-
     public void removeCurrent() {
         preferences.edit().remove(CURRENT_ORDER_KEY).commit();
         preferences.edit().remove(CURRENT_TASK_KEY).commit();
@@ -57,12 +53,24 @@ public class PreferencesManager {
         return preferences.getLong(CURRENT_ORDER_KEY, -1);
     }
 
-    public String getDropBoxToken() {
+    public boolean isCurrentTaskRunning(){
+        if (getCurrentOrder() > 0){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+    public void saveDropBoxToken(String token){
+        preferences.edit().putString(DROPBOX_TOKEN_KEY, token).commit();
+    }
+
+    public String getDropBoxToken(){
         return preferences.getString(DROPBOX_TOKEN_KEY, "");
     }
 
-    public boolean isCurrentTaskRunning(){
-        if (getCurrentOrder() > 0){
+    public boolean isDropBoxTokenSet(){
+        if (getDropBoxToken().length() > 0 ){
             return true;
         }else {
             return false;

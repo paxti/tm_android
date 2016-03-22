@@ -11,6 +11,8 @@ import com.salesforce.androidsdk.smartstore.store.SmartStore;
 import com.salesforce.androidsdk.smartsync.util.Constants;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Date;
 
 /**
@@ -135,6 +137,11 @@ public class Order implements Serializable {
 
     public String getDropboxLink() {
         return dropboxLink;
+    }
+
+    public String getDecodedDropboxLink() throws UnsupportedEncodingException {
+        return URLDecoder.decode(dropboxLink, "UTF-8").toString().
+                replace("https://www.dropbox.com/work", "");
     }
 
     public void setDropboxLink(String dropboxLink) {

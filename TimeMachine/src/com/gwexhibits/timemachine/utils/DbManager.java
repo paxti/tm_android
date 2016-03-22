@@ -8,8 +8,10 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.gwexhibits.timemachine.objects.pojo.Order;
+import com.gwexhibits.timemachine.objects.pojo.Photo;
 import com.gwexhibits.timemachine.objects.pojo.Time;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
+import com.gwexhibits.timemachine.objects.sf.PhotoObject;
 import com.gwexhibits.timemachine.objects.sf.TimeObject;
 import com.salesforce.androidsdk.accounts.UserAccount;
 import com.salesforce.androidsdk.smartstore.store.SmartStore;
@@ -101,5 +103,16 @@ public class DbManager {
         Time currentTime = getTimeObject();
         currentTime.setNote(note);
         return updateTime(currentTime);
+    }
+
+    public Photo savePhoto(Photo photoEntry) throws JSONException, IOException {
+        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        ObjectReader jsonReader = mapper.reader(Photo.class);
+
+        JSONObject objectToSave = new JSONObject(mapper.valueToTree(photoEntry).toString());
+        JSONObject savedObject = smartStore.create(PhotoObject.PHOTOS_SUPE, objectToSave);
+        return (Photo) jsonReader.readValue(savedObject.toString());
     }
 }

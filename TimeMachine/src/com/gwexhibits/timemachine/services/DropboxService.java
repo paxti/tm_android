@@ -12,6 +12,7 @@ import com.dropbox.client2.session.AppKeyPair;
 import com.gwexhibits.timemachine.R;
 import com.gwexhibits.timemachine.objects.sf.PhotoObject;
 import com.gwexhibits.timemachine.utils.NotificationHelper;
+import com.gwexhibits.timemachine.utils.PreferencesManager;
 import com.gwexhibits.timemachine.utils.Utils;
 import com.salesforce.androidsdk.accounts.UserAccount;
 import com.salesforce.androidsdk.smartstore.store.QuerySpec;
@@ -119,6 +120,6 @@ public class DropboxService extends IntentService {
     }
 
     private void loadAuth(AndroidAuthSession session) {
-        session.setOAuth2AccessToken(Utils.getDropBoxToken(getApplicationContext()));
+        session.setOAuth2AccessToken(PreferencesManager.getInstance().getDropBoxToken());
     }
 }

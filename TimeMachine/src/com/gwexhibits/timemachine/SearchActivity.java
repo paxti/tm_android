@@ -70,6 +70,7 @@ public class SearchActivity extends AppCompatActivity{
         passcodeManager = SalesforceSDKManager.getInstance().getPasscodeManager();
         userSwitchReceiver = new ActivityUserSwitchReceiver();
         registerReceiver(userSwitchReceiver, new IntentFilter(UserAccountManager.USER_SWITCH_INTENT_ACTION));
+        PreferencesManager.initializeInstance(this);
 
         // Lets observers know that activity creation is complete.
         EventsObservable.get().notifyEvent(EventsObservable.EventType.MainActivityCreateComplete, this);
@@ -128,7 +129,7 @@ public class SearchActivity extends AppCompatActivity{
                 // Required to complete auth, sets the access token on the session
                 mDBApi.getSession().finishAuthentication();
 
-                Utils.saveDropBoxToken(this, mDBApi.getSession().getOAuth2AccessToken());
+                PreferencesManager.getInstance().saveDropBoxToken(mDBApi.getSession().getOAuth2AccessToken());
             } catch (IllegalStateException e) {
                 Log.i("DbAuthLog", "Error authenticating", e);
             }
@@ -139,6 +140,7 @@ public class SearchActivity extends AppCompatActivity{
         if (PreferencesManager.getInstance().isCurrentTaskRunning()){
             Intent showOrderDetails = new Intent(SearchActivity.this, OrderDetailsActivity.class);
             this.startActivity(showOrderDetails);
+            finish();
         }
     }
 
@@ -203,8 +205,8 @@ public class SearchActivity extends AppCompatActivity{
 
     private void loadAuth(AndroidAuthSession session) {
 
-        if(Utils.isDropBoxTokenSet(this)){
-            session.setOAuth2AccessToken(Utils.getDropBoxToken(this));
+        if(PreferencesManager.getInstance().isDropBoxTokenSet()){
+            session.setOAuth2AccessToken(PreferencesManager.getInstance().getDropBoxToken());
         }else{
             AppKeyPair appKeys = new AppKeyPair(DropboxService.APP_KEY, DropboxService.APP_SECRET);
             session = new AndroidAuthSession(appKeys);

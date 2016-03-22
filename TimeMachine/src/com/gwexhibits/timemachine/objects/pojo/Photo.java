@@ -12,20 +12,29 @@ import java.io.Serializable;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Photo implements Serializable {
 
+    private static final String localFolder = "/data/photos/";
+
     @JsonProperty(PhotoObject.PATH)
     private String localPath;
 
     @JsonProperty(PhotoObject.DROPBOX_PATH)
     private String dropboxPath;
 
-    @JsonProperty(PhotoObject.PATH)
+    @JsonProperty(PhotoObject.PHASE)
     private String phase;
 
     @JsonProperty(PhotoObject.ORDER)
-    private Order order;
+    private String orderId;
 
-    Photo(){
+    public Photo(){
 
+    }
+
+    public Photo(String localPath, String dropboxPath, String phase, String orderId){
+        setLocalPath(localPath);
+        setDropboxPath(dropboxPath);
+        setPhase(phase);
+        setOrder(orderId);
     }
 
     public String getLocalPath() {
@@ -52,11 +61,12 @@ public class Photo implements Serializable {
         this.phase = phase;
     }
 
-    public Order getOrder() {
-        return order;
+    public String getOrder() {
+        return orderId;
     }
 
-    public void setOrder(Order order) {
-        this.order = order;
+    public void setOrder(String orderId) {
+        this.orderId = orderId;
     }
+
 }
