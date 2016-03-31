@@ -8,7 +8,7 @@
     <string name="app_package">com.gwexhibits.timemachine</string>
     <string name="error_message">Something went wrong</string>
     <string name="empty"></string>
-    <string name="something_went_wrong">Something went wrong we will try to sync later</string>
+    <string name="something_went_wrong">Something isn\'t right- we\'ll try to sync again later</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_splash_screen">SplashScreen</string>
     <!--Search activity-->
@@ -18,8 +18,8 @@
     <string name="placeholder_session_title">Title</string>
     <string name="secondary_text">Something here as well</string>
     <string name="start_new_task">Start new task</string>
-    <string name="order_status_card_title">You have running task !</string>
-    <string name="current_task_running_for">Task is running for: 1h 3m</string>
+    <string name="order_status_card_title">You\'ve got a running task!</string>
+    <string name="current_task_running_for">This task has been running for: 1h 3m</string>
     <string name="sfid_title">SFID: </string>
     <string name="general_section_title">General information</string>
 
@@ -32,12 +32,12 @@
     <string name="stage_dialog_tag">PhaseDialog</string>
 
     <!--TimeSyncService-->
-    <string name="you_are_offline">You are offline we will try to sync later</string>
-    <string name="times_uploaded_to_sf">Times uploaded to SalesForce</string>
-    <string name="sync_with_sf_complited">Sync with SalesForce is completed</string>
+    <string name="you_are_offline">You have no internets- we\'ll try to sync later</string>
+    <string name="times_uploaded_to_sf">Times uploaded to SalesForce!</string>
+    <string name="sync_with_sf_complited">Sync with SalesForce is completed!</string>
 
     <!--Notifications-->
-    <string name="notification_subject">You have running task</string>
+    <string name="notification_subject">You\'ve got a running task!</string>
     <string name="notification_stop">Stop task</string>
     <string name="notication_go_to_order">Go to order</string>
     <string name="notification_default_note">Stopped from Notification bar</string>
@@ -46,25 +46,25 @@
     <string name="notification_show">in %1$s</string>
     <string name="notification_duration">Task is running for about %1$s!h</string>
     <string name="notification_photo_uploading">Photo is uploading &#8230;</string>
-    <string name="notification_upload_failed">Uploading to DropBox has failed !</string>
+    <string name="notification_upload_failed">Oh noes- uploading to DropBox has failed !</string>
     <string name="notification_uploaded">Upload finished</string>
     <string name="notification_progress">Uploaded %1$s out of %2$s</string>
 
 
     <!--Toast -->
     <string name="toast_saved_locally">Photo is saved locally</string>
-    <string name="toast_total_failure">Something went wrong. Picture is not saved !!!</string>
+    <string name="toast_total_failure">Oh noes- something went wrong.  Your picture didn\'t save!</string>
     <string name="toast_uploaded">Picture is uploaded</string>
     <string name="toast_uploading">Uploading &#8230;</string>
-    <string name="toast_bad_dropbox_link">Can\'t get correct dropbox link !</string>
+    <string name="toast_bad_dropbox_link">Can\'t find correct dropbox link !</string>
     <string name="toast_cant_upload">Can\'t upload to DropBox !</string>
     <string name="toast_unsupported_code">Unexpected resultCode: </string>
     <string name="toast_error">Unexpected error</string>
     <string name="toast_cant_start">Error, task is not started</string>
     <string name="toast_dropbox_auth_problem">Error with accessing DropBox</string>
     <string name="toast_file_not_found">File is not found !</string>
-    <string name="toast_cant_read_from_db">Can\'t read from locacl DB</string>
-    <string name="toast_you_need_internet">You need to be connected to internet</string>
+    <string name="toast_cant_read_from_db">Can\'t read from local DB</string>
+    <string name="toast_you_need_internet">You have to be connected to the internet</string>
     <string name="toast_end_before_start">Start time should be after End time</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
