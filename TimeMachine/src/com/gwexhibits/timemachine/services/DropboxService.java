@@ -33,12 +33,15 @@ public class DropboxService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        notificationBuilder = NotificationHelper.getNotificationBuilder(this);
-        notificationBuilder.setProgress(100, 1, true);
-        NotificationHelper.updateUploadNotification(DropboxService.this, notificationBuilder);
-
         try {
             List<Photo> photos = DbManager.getInstance().getAllNotUploadedPhotos();
+
+            if (photos.size() > 0) {
+                notificationBuilder = NotificationHelper.getNotificationBuilder(this);
+                notificationBuilder.setProgress(100, 1, true);
+                NotificationHelper.updateUploadNotification(DropboxService.this, notificationBuilder);
+            }
+
             uploadFiles(photos);
         }catch (Exception ex){
             ex.printStackTrace();

@@ -14,7 +14,6 @@ public abstract class DropboxActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        PreferencesManager.initializeInstance(this);
         String accessToken = PreferencesManager.getInstance().getDropBoxToken();
         if (accessToken == null) {
             accessToken = Auth.getOAuth2Token();

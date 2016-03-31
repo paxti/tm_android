@@ -2,12 +2,19 @@ package com.gwexhibits.timemachine;
 
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
+import com.gwexhibits.timemachine.objects.sf.OrderObject;
+import com.gwexhibits.timemachine.objects.sf.PhotoObject;
+import com.gwexhibits.timemachine.objects.sf.TimeObject;
+import com.salesforce.androidsdk.accounts.UserAccount;
 import com.salesforce.androidsdk.accounts.UserAccountManager;
 import com.salesforce.androidsdk.app.SalesforceSDKManager;
 import com.salesforce.androidsdk.rest.ClientManager;
 import com.salesforce.androidsdk.rest.RestClient;
 import com.salesforce.androidsdk.security.PasscodeManager;
+import com.salesforce.androidsdk.smartstore.store.SmartStore;
+import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
 import com.salesforce.androidsdk.util.EventsObservable;
 import com.salesforce.androidsdk.util.UserSwitchReceiver;
 

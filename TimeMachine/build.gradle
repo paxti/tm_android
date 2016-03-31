@@ -3,11 +3,11 @@ apply plugin: 'android'
 dependencies {
     compile project(':forcedroid:libs:SmartSync')
     compile project(':library')
-    compile 'com.android.support:appcompat-v7:23.1.1'
-    compile 'com.jakewharton:butterknife:7.0.1'
-    compile 'com.android.support:design:23.1.1'
     //    compile 'com.android.support:recyclerview-v7:23.1.+'
-    compile 'com.android.support:cardview-v7:23.0+'
+    compile 'com.android.support:appcompat-v7:23.2.1'
+    compile 'com.jakewharton:butterknife:7.0.1'
+    compile 'com.android.support:design:23.2.1'
+    compile 'com.android.support:cardview-v7:23.2.1'
     compile 'com.github.clans:fab:1.6.2'
     compile 'jp.wasabeef:recyclerview-animators:2.2.1'
     compile 'com.baoyz.pullrefreshlayout:library:1.2.0'
@@ -21,11 +21,14 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-databind:2.4.1'
     compile 'com.dropbox.core:dropbox-core-sdk:2.0.1'
     compile 'com.squareup.okhttp:okhttp:2.4.0'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.android.support:support-v4:23.2.1'
+    compile 'com.android.support:recyclerview-v7:23.2.1'
 }
 
 android {
     compileSdkVersion 23
-    buildToolsVersion '23.0.1'
+    buildToolsVersion '23.0.2'
 //    useLibrary 'org.apache.http.legacy'
 
     sourceSets {
@@ -58,6 +61,10 @@ android {
         exclude 'META-INF/NOTICE'
     }
 }
+
+
+
+
 
 afterEvaluate {
     // Find all connected Android tests and ensure they log all passed tests. This keeps the Travis

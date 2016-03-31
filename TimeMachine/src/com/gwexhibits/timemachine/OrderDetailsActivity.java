@@ -16,10 +16,13 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.dropbox.core.android.Auth;
 import com.dropbox.core.v2.files.FileMetadata;
 import com.gwexhibits.timemachine.async.DropboxUploader;
 import com.gwexhibits.timemachine.async.UploadFileTask;
@@ -29,11 +32,13 @@ import com.gwexhibits.timemachine.objects.OrderDetails;
 import com.gwexhibits.timemachine.objects.pojo.Order;
 import com.gwexhibits.timemachine.objects.pojo.Photo;
 import com.gwexhibits.timemachine.objects.pojo.Time;
+import com.gwexhibits.timemachine.services.TimesSyncService;
 import com.gwexhibits.timemachine.utils.DbManager;
 import com.gwexhibits.timemachine.utils.DropboxClientFactory;
 import com.gwexhibits.timemachine.utils.NotificationHelper;
 import com.gwexhibits.timemachine.utils.PreferencesManager;
 import com.gwexhibits.timemachine.utils.Utils;
+import com.salesforce.androidsdk.app.SalesforceSDKManager;
 
 import org.json.JSONException;
 
@@ -74,12 +79,15 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     private String phase = "";
     private Order order = null;
     private File photoFile = null;
+    private int backButtonCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_details);
         ButterKnife.bind(this);
+
+        backButtonCount = 0;
 
         PreferencesManager.initializeInstance(this);
         cardArrayAdapter = new CardArrayRecyclerViewAdapter(this, cards);
@@ -113,6 +121,28 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     public void onPause(){
         super.onPause();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(syncMessageReceiver);
+    }
+
+    @Override
+    public void onBackPressed() {
+        // TODO: Change this later
+        if (!PreferencesManager.getInstance().isCurrentTaskRunning()) {
+            Intent backToMain = new Intent(this, MainActivity.class);
+            startActivity(backToMain);
+        } else {
+            if( backButtonCount >= 1)
+            {
+                Intent intent = new Intent(Intent.ACTION_MAIN);
+                intent.addCategory(Intent.CATEGORY_HOME);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+            else
+            {
+                Toast.makeText(this, "Press the back button once again to close the application.", Toast.LENGTH_SHORT).show();
+                backButtonCount++;
+            }
+        }
     }
 
     @OnClick(R.id.start_new_task)
@@ -177,9 +207,10 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
                 hideStartNewTaskButton();
             }else{
                 showStartNewTaskButton();
-
-                /*Intent mServiceIntent = new Intent(getApplicationContext(), TimesSyncService.class);
-                startService(mServiceIntent);*/
+                if (Utils.isInternetAvailable(this)) {
+                    Intent mServiceIntent = new Intent(getApplicationContext(), TimesSyncService.class);
+                    startService(mServiceIntent);
+                }
             }
         }
     }
@@ -213,10 +244,10 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     }
 
     public void uploadFile(final File file, final String phase, final Order order){
-        try {
-            String dropboxRootFolder = order.getDecodedDropboxLink();
-            final String dropboxFullPath = dropboxRootFolder + "/" + phase + "/" + file.getName();
 
+        final String dropboxFullPath = getDropboxPath(file);
+
+        try {
             Toast.makeText(OrderDetailsActivity.this,
                     getString(R.string.toast_uploading),
                     Toast.LENGTH_SHORT)
@@ -235,36 +266,54 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
                 @Override
                 public void onError(Exception e) {
                     e.printStackTrace();
-                    Toast.makeText(OrderDetailsActivity.this,
-                            getString(R.string.toast_cant_upload),
-                            Toast.LENGTH_SHORT)
-                            .show();
-
-                    try {
-                        Photo photo = new Photo(photoFile.getAbsolutePath(),
-                                dropboxFullPath,
-                                phase,
-                                order.getEntyIdInString());
-                        DbManager.getInstance().savePhoto(photo);
-                        Toast.makeText(OrderDetailsActivity.this,
-                                getString(R.string.toast_saved_locally),
-                                Toast.LENGTH_SHORT)
-                                .show();
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        Toast.makeText(OrderDetailsActivity.this,
-                                getString(R.string.toast_total_failure),
-                                Toast.LENGTH_LONG).show();
-                    }
+                    savePhotoLocally(dropboxFullPath);
 
                 }
             }).execute(file.getAbsolutePath(), dropboxFullPath);
+
+        } catch (IllegalStateException ise){
+            ise.printStackTrace();
+            savePhotoLocally(dropboxFullPath);
+        }
+    }
+
+    private void savePhotoLocally(String dropboxFullPath){
+        Toast.makeText(OrderDetailsActivity.this,
+                getString(R.string.toast_cant_upload),
+                Toast.LENGTH_SHORT)
+                .show();
+
+        try {
+            Photo photo = new Photo(photoFile.getAbsolutePath(),
+                    dropboxFullPath,
+                    phase,
+                    order.getEntyIdInString());
+            DbManager.getInstance().savePhoto(photo);
+            Toast.makeText(OrderDetailsActivity.this,
+                    getString(R.string.toast_saved_locally),
+                    Toast.LENGTH_SHORT)
+                    .show();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Toast.makeText(OrderDetailsActivity.this,
+                    getString(R.string.toast_total_failure),
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private String getDropboxPath(File file){
+        String dropboxFullPath = "";
+        try {
+            String dropboxRootFolder = order.getDecodedDropboxLink();
+            dropboxFullPath = dropboxRootFolder + "/" + phase + "/" + file.getName();
         }catch (UnsupportedEncodingException ue) {
             ue.printStackTrace();
             Toast.makeText(this,
-                    getString(R.string.toast_bad_dropbox_link),
-                    Toast.LENGTH_LONG).show();
+                getString(R.string.toast_bad_dropbox_link),
+                Toast.LENGTH_LONG).show();
         }
+
+        return dropboxFullPath;
     }
 
     private BroadcastReceiver syncMessageReceiver = new BroadcastReceiver() {

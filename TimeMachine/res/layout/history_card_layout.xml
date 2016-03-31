@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<it.gmariotti.cardslib.library.view.CardViewNative
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/list_cardId"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    card:card_layout_resourceID="@layout/history_card"
+    style="@style/card_external">
+</it.gmariotti.cardslib.library.view.CardViewNative>

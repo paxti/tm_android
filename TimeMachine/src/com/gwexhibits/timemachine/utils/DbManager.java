@@ -18,6 +18,7 @@ import com.salesforce.androidsdk.smartstore.store.QuerySpec;
 import com.salesforce.androidsdk.smartstore.store.SmartSqlHelper;
 import com.salesforce.androidsdk.smartstore.store.SmartStore;
 import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
+import com.salesforce.androidsdk.smartsync.util.Constants;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -55,7 +56,11 @@ public class DbManager {
 
     public Time getTimeObject() throws JSONException, IOException {
         Long taskId = PreferencesManager.getInstance().getCurrentTask();
-        mapper.reader(Order.class);
+        return getTimeObject(taskId);
+    }
+
+    public Time getTimeObject(Long taskId) throws JSONException, IOException {
+        mapper.reader(Time.class);
         ObjectReader jsonReader = mapper.reader(Time.class);
         return (Time) jsonReader.readValue(smartStore.retrieve(TimeObject.TIME_SUPE, taskId).getString(0));
     }
@@ -71,6 +76,22 @@ public class DbManager {
         mapper.reader(Order.class);
         ObjectReader jsonReader = mapper.reader(Order.class);
         return (Order) jsonReader.readValue(smartStore.retrieve(OrderObject.ORDER_SUPE, orderId).getString(0));
+    }
+
+    public Order getOrderById(String id) throws JSONException, IOException {
+        String getOrderRequest = String.format("SELECT {%1$s:%2$s} FROM {%1$s} where {%1$s:%3$s} = '%4$s'",
+                OrderObject.ORDER_SUPE,
+                SmartSqlHelper.SOUP,
+                Constants.ID,
+                id);
+
+        mapper.reader(Order.class);
+        ObjectReader jsonReader = mapper.reader(Order.class);
+
+        String res = smartStore.query(QuerySpec.buildSmartQuerySpec(getOrderRequest, 1), 0)
+                .getJSONArray(0).getString(0);
+
+        return (Order) jsonReader.readValue(res);
     }
 
     public Time saveTime(Time timeEntry) throws JSONException, IOException {
@@ -130,11 +151,7 @@ public class DbManager {
 
         ObjectReader jsonReader = mapper.reader(Photo.class);
 
-        String getAllPhotos = String.format("SELECT {%s:%s} FROM {%s}",
-                PhotoObject.PHOTOS_SUPE,
-                SmartSqlHelper.SOUP,
-                PhotoObject.PHOTOS_SUPE);
-        JSONArray res = smartStore.query(QuerySpec.buildSmartQuerySpec(getAllPhotos, PAGE_SIZE), 0);
+        JSONArray res = getAllInSoup(PhotoObject.PHOTOS_SUPE);
 
         List<Photo> photos = new ArrayList<>();
 
@@ -143,6 +160,31 @@ public class DbManager {
         }
 
         return  photos;
+    }
+
+    public List<Time> getAllTimes() throws JSONException, IOException {
+        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        ObjectReader jsonReader = mapper.reader(Time.class);
+
+        JSONArray res = getAllInSoup(TimeObject.TIME_SUPE);
+
+        List<Time> times = new ArrayList<>();
+
+        for (int i = 0; i < res.length(); i++){
+            times.add((Time) jsonReader.readValue(res.getJSONArray(i).getJSONObject(0).toString()));
+        }
+
+        return  times;
+    }
+
+    private JSONArray getAllInSoup(String soup) throws JSONException, IOException {
+        String getAllRequest = String.format("SELECT {%1$s:%2$s} FROM {%1$s}",
+                soup,
+                SmartSqlHelper.SOUP);
+        return smartStore.query(QuerySpec.buildSmartQuerySpec(getAllRequest, PAGE_SIZE), 0);
     }
 
     public void deletePhoto(Photo photo){

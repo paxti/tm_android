@@ -15,6 +15,8 @@ import com.salesforce.androidsdk.smartsync.util.Constants;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Date;
+
 /**
  * Created by psyfu on 3/1/2016.
  */
@@ -124,7 +126,7 @@ public class TimeObject extends SalesforceObject {
         additionalInfo.put(OBJECT_TYPE_KEY, TIME_SF_OBJECT);
 
         object.put(Constants.ID, String.valueOf(System.currentTimeMillis()));
-        object.put(START_TIME, Utils.getCurrentTimeInSfFormat());
+        object.put(START_TIME, Utils.getCurrentTimeInSfFormat(new Date()));
         object.put(ORDER, orderId);
         object.put(PHASE, phase);
         object.put(LOCAL, true);
@@ -138,7 +140,7 @@ public class TimeObject extends SalesforceObject {
 
 
     public static JSONObject createTimeObjectStopedNow(JSONObject object) throws JSONException {
-        object.put(TimeObject.END_TIME, Utils.getCurrentTimeInSfFormat());
+        object.put(TimeObject.END_TIME, Utils.getCurrentTimeInSfFormat(new Date()));
         object.put(LOCAL, true);
         object.put(LOCALY_UPDATED, true);
 

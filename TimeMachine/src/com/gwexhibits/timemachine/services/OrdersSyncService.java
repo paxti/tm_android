@@ -2,14 +2,9 @@ package com.gwexhibits.timemachine.services;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.gwexhibits.timemachine.OrderDetailsActivity;
-import com.gwexhibits.timemachine.SearchActivity;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.utils.Utils;
 import com.salesforce.androidsdk.accounts.UserAccount;
@@ -54,7 +49,6 @@ public class OrdersSyncService extends IntentService {
     }
 
     public synchronized void syncDown() {
-        smartStore.registerSoup(OrderObject.ORDER_SUPE, OrderObject.ORDERS_INDEX_SPEC);
         final SyncManager.SyncUpdateCallback callbackSync = new SyncManager.SyncUpdateCallback() {
 
             @Override

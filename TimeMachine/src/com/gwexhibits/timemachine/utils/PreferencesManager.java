@@ -13,6 +13,7 @@ public class PreferencesManager {
     public static final String CURRENT_TASK_KEY = "current_task";
     public static final String CURRENT_ORDER_KEY = "current_order";
     public static final String DROPBOX_TOKEN_KEY = "dropbox_token_key";
+    public static final String FIRST_START_KEY = "first_start_key";
 
     private static PreferencesManager instance;
     private final SharedPreferences preferences;
@@ -71,5 +72,17 @@ public class PreferencesManager {
 
     public boolean isDropBoxTokenSet(){
         return getDropBoxToken() != null;
+    }
+
+    public Boolean getFirstStart(){
+        return preferences.getBoolean(FIRST_START_KEY, true);
+    }
+
+    public boolean isFirstStart(){
+        return getFirstStart() == null;
+    }
+
+    public void setFirstStart(boolean firstStart) {
+        preferences.edit().putBoolean(FIRST_START_KEY, firstStart).commit();
     }
 }

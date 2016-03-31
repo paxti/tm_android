@@ -29,9 +29,9 @@ package com.gwexhibits.timemachine;
 import android.app.Application;
 
 import com.gwexhibits.timemachine.services.PushService;
-import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
 import com.salesforce.androidsdk.app.SalesforceSDKManager.KeyInterface;
 import com.salesforce.androidsdk.security.Encryptor;
+import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
 
 /**
  * Application class for our application.
@@ -41,7 +41,7 @@ public class TimeMachineApp extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		SmartSyncSDKManager.initNative(getApplicationContext(), new NativeKeyImpl(), SearchActivity.class);
+		SmartSyncSDKManager.initNative(getApplicationContext(), new NativeKeyImpl(), MainActivity.class);
 
 		/*
 		 * Un-comment the line below to enable push notifications in this app.

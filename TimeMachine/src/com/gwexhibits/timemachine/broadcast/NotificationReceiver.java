@@ -22,6 +22,7 @@ public class NotificationReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         try {
             DbManager.getInstance().stopTask();
+            PreferencesManager.getInstance().removeCurrent();
             NotificationHelper.stopNotification(context);
         } catch (JSONException e) {
             e.printStackTrace();
