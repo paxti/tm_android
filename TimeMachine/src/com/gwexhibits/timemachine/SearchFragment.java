@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.dropbox.core.android.Auth;
 import com.gwexhibits.timemachine.listeners.SearchBarListener;
@@ -39,6 +40,7 @@ public class SearchFragment extends Fragment {
 
     @Bind(R.id.main_relative) RelativeLayout relativeLayout;
     @Bind(R.id.searchbox) SearchBox search;
+    @Bind(R.id.version) TextView appVersion;
 
     private OnFragmentInteractionListener mListener;
 
@@ -74,6 +76,8 @@ public class SearchFragment extends Fragment {
         search.setInputType(InputType.TYPE_CLASS_NUMBER);
         search.setSearchListener(new SearchBarListener(search, getActivity()));
         search.setMaxLength(10);
+
+        appVersion.setText("v " + BuildConfig.VERSION_NAME);
 
         return view;
     }

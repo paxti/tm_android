@@ -45,6 +45,15 @@
             android:visibility="visible"
             android:layout_alignTop="@+id/button"
             android:layout_centerHorizontal="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="Small Text"
+            android:id="@+id/version"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"/>
     </RelativeLayout>
 
 </FrameLayout>
