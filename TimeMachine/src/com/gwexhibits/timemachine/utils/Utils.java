@@ -77,7 +77,11 @@ public class Utils {
     }
 
     public static String transformTimeToHuman(Date date){
-        return getDateFormatter("hh:mm a", STL_TIME_ZONE).format(date);
+        if (date == null){
+            return "";
+        } else {
+            return getDateFormatter("hh:mm a", STL_TIME_ZONE).format(date);
+        }
     }
 
     public static String transformDateToHuman(Date date){
