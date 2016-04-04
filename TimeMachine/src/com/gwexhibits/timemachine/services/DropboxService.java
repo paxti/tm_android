@@ -39,6 +39,7 @@ public class DropboxService extends IntentService {
             if (photos.size() > 0) {
                 notificationBuilder = NotificationHelper.getNotificationBuilder(this);
                 notificationBuilder.setProgress(100, 1, true);
+                notificationBuilder.setContentText(getString(R.string.notification_photos_uploading));
                 NotificationHelper.updateUploadNotification(DropboxService.this, notificationBuilder);
             }
 
