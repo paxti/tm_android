@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity
                 Intent timeSyncSerice = new Intent(this, TimesSyncService.class);
                 startService(timeSyncSerice);
             } else {
-                Toast.makeText(this, getString(R.string.toast_you_need_internet), Toast.LENGTH_LONG);
+                Toast.makeText(this, getString(R.string.toast_you_need_internet), Toast.LENGTH_LONG).show();
             }
 
             return true;
@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity
                 Intent mServiceIntent = new Intent(this, OrdersSyncService.class);
                 startService(mServiceIntent);
             } else {
-                Toast.makeText(this, getString(R.string.toast_you_need_internet), Toast.LENGTH_LONG);
+                Toast.makeText(this, getString(R.string.toast_you_need_internet), Toast.LENGTH_LONG).show();
             }
 
             return true;
@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity
                 Intent timeSyncSerice = new Intent(this, TimesSyncService.class);
                 startService(timeSyncSerice);
             } else {
-                Toast.makeText(this, getString(R.string.toast_you_need_internet), Toast.LENGTH_LONG);
+                Toast.makeText(this, getString(R.string.toast_you_need_internet), Toast.LENGTH_LONG).show();
             }
 
             return true;
@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity
                 Intent dropBoxService = new Intent(this, DropboxService.class);
                 startService(dropBoxService);
             } else {
-                Toast.makeText(this, getString(R.string.toast_you_need_internet), Toast.LENGTH_LONG);
+                Toast.makeText(this, getString(R.string.toast_you_need_internet), Toast.LENGTH_LONG).show();
             }
 
             return true;
@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity
             saveTimeObject(timeObject, card);
         } catch (EndAfterStartException e) {
             e.printStackTrace();
-            Toast.makeText(this, getString(R.string.toast_end_before_start), Toast.LENGTH_LONG);
+            Toast.makeText(this, getString(R.string.toast_end_before_start), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -222,7 +222,7 @@ public class MainActivity extends AppCompatActivity
             saveTimeObject(timeObject, card);
         } catch (EndAfterStartException e) {
             e.printStackTrace();
-            Toast.makeText(this, getString(R.string.toast_end_before_start), Toast.LENGTH_LONG);
+            Toast.makeText(this, getString(R.string.toast_end_before_start), Toast.LENGTH_LONG).show();
         }
     }
 

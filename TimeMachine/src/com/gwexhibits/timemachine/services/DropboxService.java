@@ -1,7 +1,9 @@
 package com.gwexhibits.timemachine.services;
 
 import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
 import android.text.Html;
 import android.util.Log;
@@ -41,12 +43,14 @@ public class DropboxService extends IntentService {
                 notificationBuilder.setProgress(100, 1, true);
                 notificationBuilder.setContentText(getString(R.string.notification_photos_uploading));
                 NotificationHelper.updateUploadNotification(DropboxService.this, notificationBuilder);
+                uploadFiles(photos);
+            } else {
+                showToast(this, getString(R.string.toast_nothing_to_sync));
             }
 
-            uploadFiles(photos);
         }catch (Exception ex){
             ex.printStackTrace();
-            Toast.makeText(this, getString(R.string.toast_cant_read_from_db), Toast.LENGTH_LONG).show();
+            showToast(this, getString(R.string.toast_cant_read_from_db));
 
             notificationBuilder.setContentText(this.getString(R.string.notification_upload_failed));
             notificationBuilder.setProgress(1, 1, false);
@@ -82,12 +86,21 @@ public class DropboxService extends IntentService {
                 @Override
                 public void onError(Exception e) {
                     e.printStackTrace();
-                    Toast.makeText(DropboxService.this,
-                            getString(R.string.toast_cant_upload),
-                            Toast.LENGTH_LONG).show();
+                    showToast(DropboxService.this, getString(R.string.toast_cant_upload));
                     progress++;
                 }
             }).execute(file.getAbsolutePath(), photo.getDropboxPath());
         }
+    }
+
+    private void showToast(final Context context, final String text){
+        Handler h = new Handler(context.getMainLooper());
+
+        h.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(context, text, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }

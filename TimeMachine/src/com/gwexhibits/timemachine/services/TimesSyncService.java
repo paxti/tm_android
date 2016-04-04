@@ -115,7 +115,7 @@ public class TimesSyncService extends IntentService {
             @Override
             public void onUpdate(SyncState sync) {
                 if (SyncState.Status.DONE.equals(sync.getStatus())) {
-                    showToast(getApplication(), getString(R.string.toast_started_time_service));
+                    showToast(getApplication(), getString(R.string.toast_finished_time_service));
                 }
             }
         };

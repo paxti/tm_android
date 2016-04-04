@@ -67,6 +67,8 @@
     <string name="toast_you_need_internet">You have to be connected to the internet</string>
     <string name="toast_end_before_start">Start time should be after End time</string>
 
+    <string name="toast_nothing_to_sync">Nothing to sync</string>
+
     <string name="toast_started_time_service">Syncing times ...</string>
     <string name="toast_finished_time_upload">Times uploaded to SalesForce"</string>
     <string name="toast_finished_time_service">Times synced with SalesForce"</string>
