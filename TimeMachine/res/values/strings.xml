@@ -46,10 +46,10 @@
     <string name="notification_show">in %1$s</string>
     <string name="notification_duration">Task is running for about %1$s!h</string>
     <string name="notification_photo_uploading">Photo is uploading &#8230;</string>
+    <string name="notification_photos_uploading">Photos are uploading &#8230;</string>
     <string name="notification_upload_failed">Oh noes- uploading to DropBox has failed !</string>
     <string name="notification_uploaded">Upload finished</string>
     <string name="notification_progress">Uploaded %1$s out of %2$s</string>
-
 
     <!--Toast -->
     <string name="toast_saved_locally">Photo is saved locally</string>
@@ -66,6 +66,12 @@
     <string name="toast_cant_read_from_db">Can\'t read from local DB</string>
     <string name="toast_you_need_internet">You have to be connected to the internet</string>
     <string name="toast_end_before_start">Start time should be after End time</string>
+
+    <string name="toast_started_time_service">Syncing times ...</string>
+    <string name="toast_finished_time_upload">Times uploaded to SalesForce"</string>
+    <string name="toast_finished_time_service">Times synced with SalesForce"</string>
+    <string name="toast_started_order_service">Syncing orders ...</string>
+    <string name="toast_finished_order_service">Orders synced with SalesForce"</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
