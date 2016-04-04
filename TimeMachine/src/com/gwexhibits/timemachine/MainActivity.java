@@ -12,6 +12,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
@@ -22,6 +23,7 @@ import com.gwexhibits.timemachine.cards.HistoryCard;
 import com.gwexhibits.timemachine.dummy.DummyContent;
 import com.gwexhibits.timemachine.fragments.TimePickerFragment;
 import com.gwexhibits.timemachine.objects.EndAfterStartException;
+import com.gwexhibits.timemachine.objects.pojo.ChatterPost;
 import com.gwexhibits.timemachine.objects.pojo.Photo;
 import com.gwexhibits.timemachine.objects.pojo.Time;
 import com.gwexhibits.timemachine.services.DropboxService;
@@ -30,6 +32,7 @@ import com.gwexhibits.timemachine.services.TimesSyncService;
 import com.gwexhibits.timemachine.utils.DbManager;
 import com.gwexhibits.timemachine.utils.Utils;
 import com.salesforce.androidsdk.app.SalesforceSDKManager;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 
@@ -40,16 +43,19 @@ import java.util.Date;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends MenuActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         HistoryCardFragment.OnListFragmentInteractionListener,
         GalleryFragment.OnGalleryItemInteractionListener,
         SearchFragment.OnFragmentInteractionListener,
-        TimePickerFragment.OnCompleteListener {
+        ChatterFragment.OnFragmentInteractionListener,
+        TimePickerFragment.OnCompleteListener,
+        ChatterPostFragment.OnFragmentInteractionListener {
 
     public static final String SEARCH_FRAGMENT = "searchFragment";
     public static final String HISTORY_FRAGMENT = "historyFragment";
     public static final String GALLERY_FRAGMENT = "galleryFragment";
+    public static final String CHATTER_FRAGMENT = "chatterFragment";
 
     @Bind(R.id.drawer_layout) DrawerLayout drawer;
     @Bind(R.id.nav_view) NavigationView navigationView;
@@ -92,6 +98,11 @@ public class MainActivity extends AppCompatActivity
 
         accountName.setText(SalesforceSDKManager.getInstance().getUserAccountManager().getCurrentUser().getDisplayName());
         accountEmail.setText(SalesforceSDKManager.getInstance().getUserAccountManager().getCurrentUser().getEmail());
+
+        /*Picasso.with(this)
+                .load(SalesforceSDKManager.getInstance().getUserAccountManager().getCurrentUser().getPhotoUrl())
+                .into(accountImage);*/
+
         navigationView.getMenu().getItem(0).setChecked(true);
     }
     @Override
@@ -102,72 +113,6 @@ public class MainActivity extends AppCompatActivity
         } else {
             super.onBackPressed();
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        if (id == R.id.sync_all) {
-            if (Utils.isInternetAvailable(this)) {
-                Intent mServiceIntent = new Intent(this, OrdersSyncService.class);
-                startService(mServiceIntent);
-
-                Intent dropBoxService = new Intent(this, DropboxService.class);
-                startService(dropBoxService);
-
-                Intent timeSyncSerice = new Intent(this, TimesSyncService.class);
-                startService(timeSyncSerice);
-            } else {
-                Toast.makeText(this, getString(R.string.toast_you_need_internet), Toast.LENGTH_LONG).show();
-            }
-
-            return true;
-        }
-
-        if (id == R.id.sync_orders) {
-            if (Utils.isInternetAvailable(this)) {
-                Intent mServiceIntent = new Intent(this, OrdersSyncService.class);
-                startService(mServiceIntent);
-            } else {
-                Toast.makeText(this, getString(R.string.toast_you_need_internet), Toast.LENGTH_LONG).show();
-            }
-
-            return true;
-        }
-
-        if (id == R.id.sync_tasks) {
-            if (Utils.isInternetAvailable(this)) {
-                Intent timeSyncSerice = new Intent(this, TimesSyncService.class);
-                startService(timeSyncSerice);
-            } else {
-                Toast.makeText(this, getString(R.string.toast_you_need_internet), Toast.LENGTH_LONG).show();
-            }
-
-            return true;
-        }
-
-        if (id == R.id.sync_photos) {
-            if (Utils.isInternetAvailable(this)) {
-                Intent dropBoxService = new Intent(this, DropboxService.class);
-                startService(dropBoxService);
-            } else {
-                Toast.makeText(this, getString(R.string.toast_you_need_internet), Toast.LENGTH_LONG).show();
-            }
-
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -194,6 +139,14 @@ public class MainActivity extends AppCompatActivity
                     .beginTransaction()
                     .replace(R.id.root_layout, GalleryFragment.newInstance(3), GALLERY_FRAGMENT)
                     .addToBackStack(GALLERY_FRAGMENT)
+                    .commit();
+
+        } else if (id == R.id.nav_chatter) {
+
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.root_layout, ChatterFragment.newInstance(null), CHATTER_FRAGMENT)
+                    .addToBackStack(CHATTER_FRAGMENT)
                     .commit();
 
         }
@@ -243,10 +196,8 @@ public class MainActivity extends AppCompatActivity
     private void saveTimeObject(Time timeObject, HistoryCard card){
         try {
             Time newTimeObject = DbManager.getInstance().updateTime(timeObject);
-
-            HistoryCardFragment galleryFragment = (HistoryCardFragment) getSupportFragmentManager().findFragmentByTag(HISTORY_FRAGMENT);
-            galleryFragment.updateData();
-
+            HistoryCardFragment historyFragment = (HistoryCardFragment) getSupportFragmentManager().findFragmentByTag(HISTORY_FRAGMENT);
+            historyFragment.updateData();
         } catch (JSONException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -256,7 +207,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onListFragmentInteraction(Photo photo) {
-
         DbManager.getInstance().deletePhoto(photo);
         File photoFile = new File(photo.getLocalPath());
         photoFile.delete();
@@ -272,4 +222,18 @@ public class MainActivity extends AppCompatActivity
     public void onFragmentInteraction(Uri uri) {
     }
 
+    @Override
+    public void onItemViewClicked(ChatterPost postUrl) {
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.root_layout, ChatterPostFragment.newInstance(postUrl), "CHATTER_POST")
+                .addToBackStack("CHATTER_POST")
+                .commit();
+    }
+
+    @Override
+    public void onItemViewClicked(String postUrl) {
+
+    }
 }

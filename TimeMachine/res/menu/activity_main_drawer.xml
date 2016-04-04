@@ -16,17 +16,13 @@
             android:title="@string/gallery_menu_item_title"/>
     </group>
 
-    <!--<item android:title="Communicate">
+    <item android:title="Communicate">
         <menu>
             <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Share"/>
-            <item
-                android:id="@+id/nav_send"
+                android:id="@+id/nav_chatter"
                 android:icon="@drawable/ic_menu_send"
-                android:title="Send"/>
+                android:title="@string/chatter_menu_item_title"/>
         </menu>
-    </item>-->
+    </item>
 
 </menu>

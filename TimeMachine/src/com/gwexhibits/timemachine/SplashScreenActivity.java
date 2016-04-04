@@ -12,6 +12,7 @@ import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.objects.sf.PhotoObject;
 import com.gwexhibits.timemachine.objects.sf.TimeObject;
 import com.gwexhibits.timemachine.services.OrdersSyncService;
+import com.gwexhibits.timemachine.utils.ChatterManager;
 import com.gwexhibits.timemachine.utils.PreferencesManager;
 import com.gwexhibits.timemachine.utils.Utils;
 import com.salesforce.androidsdk.accounts.UserAccount;
@@ -57,6 +58,9 @@ public class SplashScreenActivity extends SalesforceDropboxActivity {
     @Override
     public void onResume(RestClient client) {
         this.client = client;
+
+        ChatterManager.initializeInstance(client);
+
         if(PreferencesManager.getInstance().getFirstStart()) {
             account = SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser();
             smartStore = SmartSyncSDKManager.getInstance().getSmartStore(account);

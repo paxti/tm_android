@@ -3,6 +3,13 @@ package com.gwexhibits.timemachine.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.gwexhibits.timemachine.objects.pojo.Order;
+import com.gwexhibits.timemachine.objects.pojo.Time;
+
+import org.apache.commons.codec.DecoderException;
+
+import java.io.IOException;
+
 /**
  * Created by psyfu on 3/18/2016.
  */
@@ -36,9 +43,9 @@ public class PreferencesManager {
         preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
-    public void setCurrents(long order, long task) {
-        preferences.edit().putLong(CURRENT_ORDER_KEY, order).commit();
-        preferences.edit().putLong(CURRENT_TASK_KEY, task).commit();
+    public void setCurrents(Order order, Time task) throws IOException {
+        preferences.edit().putString(CURRENT_ORDER_KEY, Utils.toString(order)).commit();
+        preferences.edit().putString(CURRENT_TASK_KEY, Utils.toString(task)).commit();
     }
 
     public void removeCurrent() {
@@ -46,16 +53,16 @@ public class PreferencesManager {
         preferences.edit().remove(CURRENT_TASK_KEY).commit();
     }
 
-    public long getCurrentTask() {
-        return preferences.getLong(CURRENT_TASK_KEY, -1);
+    public Time getCurrentTask() throws DecoderException, IOException, ClassNotFoundException {
+        return (Time) Utils.fromString(preferences.getString(CURRENT_TASK_KEY, ""));
     }
 
-    public long getCurrentOrder() {
-        return preferences.getLong(CURRENT_ORDER_KEY, -1);
+    public Order getCurrentOrder() throws DecoderException, IOException, ClassNotFoundException {
+        return (Order) Utils.fromString(preferences.getString(CURRENT_ORDER_KEY, ""));
     }
 
     public boolean isCurrentTaskRunning(){
-        if (getCurrentOrder() > 0){
+        if (preferences.getString(CURRENT_ORDER_KEY, "").length() > 0){
             return true;
         }else {
             return false;
@@ -84,5 +91,9 @@ public class PreferencesManager {
 
     public void setFirstStart(boolean firstStart) {
         preferences.edit().putBoolean(FIRST_START_KEY, firstStart).commit();
+    }
+
+    public String test(){
+        return preferences.getString(CURRENT_ORDER_KEY, "");
     }
 }

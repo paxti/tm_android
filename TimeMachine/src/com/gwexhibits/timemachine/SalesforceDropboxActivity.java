@@ -18,6 +18,8 @@ import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
 import com.salesforce.androidsdk.util.EventsObservable;
 import com.salesforce.androidsdk.util.UserSwitchReceiver;
 
+import java.io.Serializable;
+
 /**
  * Created by psyfu on 3/22/2016.
  */

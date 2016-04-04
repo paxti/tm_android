@@ -20,6 +20,7 @@ import com.salesforce.androidsdk.smartstore.store.SmartStore;
 import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
 import com.salesforce.androidsdk.smartsync.util.Constants;
 
+import org.apache.commons.codec.DecoderException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -54,29 +55,12 @@ public class DbManager {
         PreferencesManager.initializeInstance(context);
     }
 
-    public Time getTimeObject() throws JSONException, IOException {
-        Long taskId = PreferencesManager.getInstance().getCurrentTask();
-        return getTimeObject(taskId);
-    }
-
     public Time getTimeObject(Long taskId) throws JSONException, IOException {
         mapper.reader(Time.class);
         ObjectReader jsonReader = mapper.reader(Time.class);
         return (Time) jsonReader.readValue(smartStore.retrieve(TimeObject.TIME_SUPE, taskId).getString(0));
     }
 
-    public Order getOrderObject() throws JSONException, IOException {
-        Long orderId = PreferencesManager.getInstance().getCurrentOrder();
-        mapper.reader(Order.class);
-        ObjectReader jsonReader = mapper.reader(Order.class);
-        return (Order) jsonReader.readValue(smartStore.retrieve(OrderObject.ORDER_SUPE, orderId).getString(0));
-    }
-
-    public Order getOrderObject(Long orderId) throws JSONException, IOException {
-        mapper.reader(Order.class);
-        ObjectReader jsonReader = mapper.reader(Order.class);
-        return (Order) jsonReader.readValue(smartStore.retrieve(OrderObject.ORDER_SUPE, orderId).getString(0));
-    }
 
     public Order getOrderById(String id) throws JSONException, IOException {
         String getOrderRequest = String.format("SELECT {%1$s:%2$s} FROM {%1$s} where {%1$s:%3$s} = '%4$s'",
@@ -121,14 +105,14 @@ public class DbManager {
         return saveTime(newEntry);
     }
 
-    public Time stopTask() throws IOException, JSONException {
-        Time currentTime = getTimeObject();
+    public Time stopTask() throws IOException, JSONException, DecoderException, ClassNotFoundException {
+        Time currentTime = PreferencesManager.getInstance().getCurrentTask();
         currentTime.stop();
         return updateTime(currentTime);
     }
 
-    public Time updateTimeNote(String note) throws IOException, JSONException {
-        Time currentTime = getTimeObject();
+    public Time updateTimeNote(String note) throws IOException, JSONException, DecoderException, ClassNotFoundException {
+        Time currentTime = PreferencesManager.getInstance().getCurrentTask();
         currentTime.setNote(note);
         return updateTime(currentTime);
     }

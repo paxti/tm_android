@@ -12,8 +12,18 @@ import android.os.Environment;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Base64;
+
 import android.view.View;
 
+import org.apache.commons.codec.DecoderException;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -33,6 +43,7 @@ public class Utils {
     public static final String SYNC_BROADCAST_MESSAGE_KEY = "sync_message";
 
     public static final String SF_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+    public static final String CHATTER_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
 
     public static final String PHOTOS_PATH = "/data/photos/";
 
@@ -134,5 +145,20 @@ public class Utils {
         requestCameraPermission(activity);
     }
 
+    public static Object fromString( String s ) throws IOException,
+            ClassNotFoundException, DecoderException {
+        byte [] data = Base64.decode(s, Base64.DEFAULT);
+        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
+        Object o  = ois.readObject();
+        ois.close();
+        return o;
+    }
 
+    public static String toString( Serializable o ) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(o);
+        oos.close();
+        return Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+    }
 }

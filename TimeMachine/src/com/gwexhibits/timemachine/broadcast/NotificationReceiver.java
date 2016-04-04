@@ -10,6 +10,7 @@ import com.gwexhibits.timemachine.utils.NotificationHelper;
 import com.gwexhibits.timemachine.utils.PreferencesManager;
 import com.gwexhibits.timemachine.utils.Utils;
 
+import org.apache.commons.codec.DecoderException;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -27,6 +28,10 @@ public class NotificationReceiver extends BroadcastReceiver {
         } catch (JSONException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (DecoderException e) {
             e.printStackTrace();
         }
     }

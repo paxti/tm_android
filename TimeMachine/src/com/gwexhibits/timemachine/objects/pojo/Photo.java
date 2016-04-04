@@ -2,10 +2,14 @@ package com.gwexhibits.timemachine.objects.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.objects.sf.PhotoObject;
+import com.gwexhibits.timemachine.objects.sf.TimeObject;
 import com.salesforce.androidsdk.smartstore.store.SmartStore;
 
+import java.io.File;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Created by psyfu on 3/17/2016.
@@ -34,11 +38,11 @@ public class Photo implements Serializable {
 
     }
 
-    public Photo(String localPath, String dropboxPath, String phase, String orderId){
+    public Photo(String localPath, String fileName, String phase, Order order) throws UnsupportedEncodingException {
         setLocalPath(localPath);
-        setDropboxPath(dropboxPath);
+        setDropboxPath(order, fileName, phase);
         setPhase(phase);
-        setOrder(orderId);
+        setOrder(order.getEntyIdInString());
     }
 
     public Long getEntyId() {
@@ -63,6 +67,15 @@ public class Photo implements Serializable {
 
     public void setDropboxPath(String dropboxPath) {
         this.dropboxPath = dropboxPath;
+    }
+
+    public void setDropboxPath(Order order, String fileName, String phase) throws UnsupportedEncodingException {
+
+        if (phase.equals(OrderObject.LIST_OF_STAGE_SOS[0])) {
+            phase = phase + " - " + order.getOrderNumberShort();
+        }
+
+        this.dropboxPath = order.getDecodedDropboxLink() + "/" + phase + "/" + fileName;
     }
 
     public String getPhase() {

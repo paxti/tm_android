@@ -11,6 +11,11 @@
     <string name="something_went_wrong">Something isn\'t right- we\'ll try to sync again later</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_splash_screen">SplashScreen</string>
+    <string name="exit_notification">Press the back button once again to close the application.</string>
+    <string name="load_dialog_title">Loading data</string>
+    <string name="load_dialog_text">...</string>
+
+
     <!--Search activity-->
 
     <!--Order details activity-->
@@ -22,6 +27,8 @@
     <string name="current_task_running_for">This task has been running for: 1h 3m</string>
     <string name="sfid_title">SFID: </string>
     <string name="general_section_title">General information</string>
+    <string name="order_details_tab_name">Order details</string>
+    <string name="order_chatter_tab_name">Chatter feed</string>
 
     <!--Status card-->
     <string name="stop_task">Stop task</string>
@@ -94,5 +101,9 @@
     <string name="gallery_menu_item_title">Gallery</string>
     <string name="history_menu_item_title">History</string>
     <string name="search_menu_item_title">Search</string>
+    <string name="chatter_menu_item_title">Chatter</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

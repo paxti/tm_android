@@ -52,7 +52,6 @@ public class HistoryCardFragment extends Fragment {
     private OnListFragmentInteractionListener mListener;
 
     private ArrayList<HistoryCard> cards = new ArrayList<>();
-    private CardArrayRecyclerViewAdapter cardArrayAdapter;
     private HistoryAdapter historyAdapter = null;
 
     public HistoryCardFragment() {

@@ -30,7 +30,7 @@ public class StagePopUp extends DialogFragment {
                         public void onClick(DialogInterface dialog, int id) {
                             Intent showOrderDetails = new Intent(getActivity(), OrderDetailsActivity.class);
                             showOrderDetails.putExtra(OrderDetailsActivity.ORDER_KEY,
-                                    bundle.getLong(OrderDetailsActivity.ORDER_KEY));
+                                    bundle.getSerializable(OrderDetailsActivity.ORDER_KEY));
 
                             showOrderDetails.putExtra(OrderDetailsActivity.PHASE_KEY,
                                     bundle.getStringArray(LIST_OF_PHASES_KEY)[id]);
