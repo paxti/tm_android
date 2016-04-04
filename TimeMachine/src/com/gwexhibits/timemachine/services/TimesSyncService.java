@@ -5,10 +5,13 @@ import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.gwexhibits.timemachine.OrderDetailsActivity;
+import com.gwexhibits.timemachine.R;
 import com.gwexhibits.timemachine.broadcast.TaskSyncAlarmReceiver;
 import com.gwexhibits.timemachine.objects.sf.TimeObject;
 import com.gwexhibits.timemachine.utils.Utils;
@@ -53,9 +56,10 @@ public class TimesSyncService extends IntentService {
     protected void onHandleIntent(Intent intent) {
 
         if(Utils.isInternetAvailable(getApplicationContext())) {
+            showToast(this, getString(R.string.toast_started_time_service));
             this.syncUp(intent);
         }else {
-            showSnackbar("You are offline we will try to sync later");
+            showToast(this, getString(R.string.you_are_offline));
             startSyncAlarmService();
         }
     }
@@ -83,10 +87,10 @@ public class TimesSyncService extends IntentService {
 
                 if (sync.getStatus().equals(SyncState.Status.DONE)) {
                     stopSyncAlarmService();
-                    showSnackbar("Times uploaded to SalesForce");
+                    showToast(getApplication(),getString(R.string.toast_finished_time_upload));
                     TimesSyncService.this.syncDown();
                 }else if(sync.getStatus().equals(SyncState.Status.FAILED)){
-                    showSnackbar("Something went wrong we will try to sync later");
+                    showToast(getApplication(), getString(R.string.toast_error));
                     startSyncAlarmService();
                 }
             }
@@ -111,7 +115,7 @@ public class TimesSyncService extends IntentService {
             @Override
             public void onUpdate(SyncState sync) {
                 if (SyncState.Status.DONE.equals(sync.getStatus())) {
-                    showSnackbar("Sync with SalesForce is completed");
+                    showToast(getApplication(), getString(R.string.toast_started_time_service));
                 }
             }
         };
@@ -149,9 +153,14 @@ public class TimesSyncService extends IntentService {
         alarmMgr.cancel(alarmIntent);
     }
 
-    private void showSnackbar (String message){
-        Intent intent = new Intent(Utils.SYNC_BROADCAST_NAME);
-        intent.putExtra(Utils.SYNC_BROADCAST_MESSAGE_KEY, message);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    private void showToast(final Context context, final String text){
+        Handler h = new Handler(context.getMainLooper());
+
+        h.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(context, text, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }

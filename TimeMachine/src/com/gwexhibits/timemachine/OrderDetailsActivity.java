@@ -246,6 +246,7 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
     public void uploadFile(final File file, final String phase, final Order order){
 
         final String dropboxFullPath = getDropboxPath(file);
+        final Photo photo = savePhotoLocally(dropboxFullPath);
 
         try {
             Toast.makeText(OrderDetailsActivity.this,
@@ -261,11 +262,13 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
                             Toast.LENGTH_SHORT).show();
 
                     file.delete();
+                    DbManager.getInstance().deletePhoto(photo);
                 }
 
                 @Override
                 public void onError(Exception e) {
                     e.printStackTrace();
+                    showCantUploadToDropBox();
                     savePhotoLocally(dropboxFullPath);
 
                 }
@@ -273,18 +276,15 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
 
         } catch (IllegalStateException ise){
             ise.printStackTrace();
+            showCantUploadToDropBox();
             savePhotoLocally(dropboxFullPath);
         }
     }
 
-    private void savePhotoLocally(String dropboxFullPath){
-        Toast.makeText(OrderDetailsActivity.this,
-                getString(R.string.toast_cant_upload),
-                Toast.LENGTH_SHORT)
-                .show();
-
+    private Photo savePhotoLocally(String dropboxFullPath){
+        Photo photo = null;
         try {
-            Photo photo = new Photo(photoFile.getAbsolutePath(),
+            photo = new Photo(photoFile.getAbsolutePath(),
                     dropboxFullPath,
                     phase,
                     order.getEntyIdInString());
@@ -299,6 +299,8 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
                     getString(R.string.toast_total_failure),
                     Toast.LENGTH_LONG).show();
         }
+
+        return photo;
     }
 
     private String getDropboxPath(File file){
@@ -314,6 +316,13 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
         }
 
         return dropboxFullPath;
+    }
+
+    private void showCantUploadToDropBox(){
+        Toast.makeText(OrderDetailsActivity.this,
+                getString(R.string.toast_cant_upload),
+                Toast.LENGTH_SHORT)
+                .show();
     }
 
     private BroadcastReceiver syncMessageReceiver = new BroadcastReceiver() {
