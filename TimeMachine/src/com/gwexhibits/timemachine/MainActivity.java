@@ -1,10 +1,12 @@
 package com.gwexhibits.timemachine;
 
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -183,6 +185,7 @@ public class MainActivity extends AppCompatActivity
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.root_layout, HistoryCardFragment.newInstance(), HISTORY_FRAGMENT)
+                    .addToBackStack(HISTORY_FRAGMENT)
                     .commit();
 
         } else if (id == R.id.nav_gallery) {
@@ -190,6 +193,7 @@ public class MainActivity extends AppCompatActivity
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.root_layout, GalleryFragment.newInstance(3), GALLERY_FRAGMENT)
+                    .addToBackStack(GALLERY_FRAGMENT)
                     .commit();
 
         }
@@ -239,9 +243,10 @@ public class MainActivity extends AppCompatActivity
     private void saveTimeObject(Time timeObject, HistoryCard card){
         try {
             Time newTimeObject = DbManager.getInstance().updateTime(timeObject);
-            card.setTime(newTimeObject);
-            card.updateData();
-            card.notifyDataSetChanged();
+
+            HistoryCardFragment galleryFragment = (HistoryCardFragment) getSupportFragmentManager().findFragmentByTag(HISTORY_FRAGMENT);
+            galleryFragment.updateData();
+
         } catch (JSONException e) {
             e.printStackTrace();
         } catch (IOException e) {
