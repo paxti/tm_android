@@ -169,15 +169,23 @@ public class DbManager {
 
         ObjectReader jsonReader = mapper.reader(Time.class);
 
-        JSONArray res = getAllInSoup(TimeObject.TIME_SUPE);
+        JSONArray res = getAllInSoupSortNewFirst(TimeObject.TIME_SUPE);
 
-        List<Time> times = new ArrayList<>();
+        List<Time> photos = new ArrayList<>();
 
         for (int i = 0; i < res.length(); i++){
-            times.add((Time) jsonReader.readValue(res.getJSONArray(i).getJSONObject(0).toString()));
+            photos.add((Time) jsonReader.readValue(res.getJSONArray(i).getJSONObject(0).toString()));
         }
 
-        return  times;
+        return  photos;
+    }
+
+    private JSONArray getAllInSoupSortNewFirst(String soup) throws JSONException, IOException {
+        String getAllRequest = String.format("SELECT {%1$s:%2$s} FROM {%1$s} order by {%1$s:%3$s} desc LIMIT 20",
+                soup,
+                SmartSqlHelper.SOUP,
+                SmartStore.SOUP_ENTRY_ID);
+        return smartStore.query(QuerySpec.buildSmartQuerySpec(getAllRequest, PAGE_SIZE), 0);
     }
 
     private JSONArray getAllInSoup(String soup) throws JSONException, IOException {
