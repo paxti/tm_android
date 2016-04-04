@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,13 +46,14 @@ import it.gmariotti.cardslib.library.recyclerview.view.CardRecyclerView;
  */
 public class HistoryCardFragment extends Fragment {
 
-    @Bind(R.id.cards_history_recyclerview) CardRecyclerView recyclerView;
+    @Bind(R.id.cards_history_recyclerview) RecyclerView recyclerView;
 //    @Bind(R.id.history_progress_bar) ProgressBar progressBar;
 
     private OnListFragmentInteractionListener mListener;
 
-    private ArrayList<Card> cards = new ArrayList<>();
+    private ArrayList<HistoryCard> cards = new ArrayList<>();
     private CardArrayRecyclerViewAdapter cardArrayAdapter;
+    private HistoryAdapter historyAdapter = null;
 
     public HistoryCardFragment() {
     }
@@ -75,20 +77,36 @@ public class HistoryCardFragment extends Fragment {
         loader.execute();
     }
 
+    public void updateData(){
+        DataLoader loader = new DataLoader();
+        loader.execute();
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_historycard_list, container, false);
-        ButterKnife.bind(this, view);
+        View view = inflater.inflate(R.layout.fragment_local_image_list, container, false);
 
-        Context context = view.getContext();
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        cardArrayAdapter = new CardArrayRecyclerViewAdapter(getActivity(), cards);
-        recyclerView.setAdapter(cardArrayAdapter);
+        // Set the adapter
+        if (view instanceof RecyclerView) {
+            Context context = view.getContext();
+            recyclerView = (RecyclerView) view;
+            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+            setHistoryAdapter();
+        }
+
 
         return view;
     }
 
+    private void setHistoryAdapter(){
+        cards.clear();
+        historyAdapter = new HistoryAdapter(getContext(), cards, historyCardCallback);
+        recyclerView.setAdapter(historyAdapter);
+        recyclerView.setHasFixedSize(false);
+        historyAdapter.notifyDataSetChanged();
+
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -114,8 +132,7 @@ public class HistoryCardFragment extends Fragment {
                             getContext(),
                             R.layout.history_card,
                             time,
-                            order,
-                            historyCardCallback );
+                            order);
                     cardsList.add(card);
                 }
             } catch (JSONException jsonex) {
@@ -128,17 +145,7 @@ public class HistoryCardFragment extends Fragment {
 
         @Override
         protected void onPostExecute(List<HistoryCard> result) {
-            cards.clear();
-            cardArrayAdapter.clear();
-            cardArrayAdapter.notifyDataSetChanged();
-
-            int position = cards.size();
-            for (HistoryCard card : result){
-                cards.add(card);
-                cardArrayAdapter.notifyItemInserted(position);
-                position++;
-            }
-//            progressBar.setVisibility(View.GONE);
+            historyAdapter.addAll(result);
         }
 
         @Override
@@ -147,45 +154,45 @@ public class HistoryCardFragment extends Fragment {
         }
     }
 
-    HistoryCard.Callback historyCardCallback = new HistoryCard.Callback() {
+    HistoryAdapter.Callback historyCardCallback = new HistoryAdapter.Callback() {
 
         @Override
-        public void onStartTimeChange(Time time, HistoryCard card) {
+        public void onStartTimeChange(HistoryCard card) {
             showTimePicker(TimePickerFragment.CHANGE_START_TIME,
                     TimePickerFragment.DIALOG_TYPE_TIME,
                     card,
-                    time.getStartTime());
+                    card.getTime().getStartTime());
         }
 
         @Override
-        public void onEndTimeChange(Time time, HistoryCard card) {
+        public void onEndTimeChange(HistoryCard card) {
             showTimePicker(TimePickerFragment.CHANGE_END_TIME,
                     TimePickerFragment.DIALOG_TYPE_TIME,
                     card,
-                    time.getEndTime());
+                    card.getTime().getEndTime());
         }
 
         @Override
-        public void onOrderChange(Time time, HistoryCard card) {
+        public void onOrderChange(HistoryCard card) {
             DialogFragment changeOrderDialog = new ChangeOrderFragment();
             changeOrderDialog.show(getFragmentManager(), "changeOrder");
         }
 
         @Override
-        public void onDateChange(Time time, HistoryCard card) {
+        public void onDateChange(HistoryCard card) {
             showTimePicker(TimePickerFragment.CHANGE_DATE,
                     TimePickerFragment.DIALOG_TYPE_DATE,
                     card,
-                    time.getStartTime());
+                    card.getTime().getStartTime());
         }
 
         @Override
-        public void onPhaseChange(Time time, HistoryCard card, Order order) {
+        public void onPhaseChange( HistoryCard card) {
             showTimePicker(TimePickerFragment.CHANGE_DATE,
                     TimePickerFragment.DIALOG_TYPE_SELECTOR,
                     card,
-                    time.getStartTime(),
-                    order);
+                    card.getTime().getStartTime(),
+                    card.getOrder());
         }
     };
 
