@@ -81,7 +81,6 @@ public class NotificationHelper {
                 .setContentText(context.getString(R.string.notification_photo_uploading))
                 .setSmallIcon(R.drawable.sf__icon)
                 .setAutoCancel(true)
-                .setPriority(NotificationCompat.COLOR_DEFAULT)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setProgress(100,0,true);
 
@@ -96,9 +95,8 @@ public class NotificationHelper {
     }
 
     public static void updateUploadNotification(Context context, NotificationCompat.Builder notificationBuilder){
-        NotificationCompat.InboxStyle richNotification = new NotificationCompat.InboxStyle(notificationBuilder);
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(context.NOTIFICATION_SERVICE);
-        notificationManager.notify(NotificationHelper.PROGRESS, richNotification.build());
+        notificationManager.notify(NotificationHelper.PROGRESS, notificationBuilder.build());
     }
 
 }
