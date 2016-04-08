@@ -126,20 +126,29 @@ public class HistoryCardFragment extends Fragment {
             List<HistoryCard> cardsList = new ArrayList<>();
             try {
                 List<Time> times = DbManager.getInstance().getAllTimes();
+
                 for(Time time : times){
-                    Order order = DbManager.getInstance().getOrderById(time.getOrderId());
-                    HistoryCard card = new HistoryCard(
-                            getContext(),
-                            R.layout.history_card,
-                            time,
-                            order);
-                    cardsList.add(card);
+                    try {
+                        Order order = DbManager.getInstance().getOrderById(time.getOrderId());
+                        HistoryCard card = new HistoryCard(
+                                getContext(),
+                                R.layout.history_card,
+                                time,
+                                order);
+                        cardsList.add(card);
+                    } catch (JSONException jsonex) {
+                        jsonex.printStackTrace();
+                    } catch (IOException ioex) {
+                        ioex.printStackTrace();
+                    }
                 }
+
             } catch (JSONException jsonex) {
                 jsonex.printStackTrace();
             } catch (IOException ioex) {
                 ioex.printStackTrace();
             }
+
             return cardsList;
         }
 

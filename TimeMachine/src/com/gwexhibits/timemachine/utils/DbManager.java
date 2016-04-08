@@ -184,7 +184,7 @@ public class DbManager {
         String getAllRequest = String.format("SELECT {%1$s:%2$s} FROM {%1$s} order by {%1$s:%3$s} desc LIMIT 20",
                 soup,
                 SmartSqlHelper.SOUP,
-                SmartStore.SOUP_ENTRY_ID);
+                TimeObject.START_TIME);
         return smartStore.query(QuerySpec.buildSmartQuerySpec(getAllRequest, PAGE_SIZE), 0);
     }
 
