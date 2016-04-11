@@ -153,7 +153,17 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
                 } else {
                     Toast.makeText(this, getString(R.string.no_permission_for_camera), Toast.LENGTH_LONG);
                 }
-                return;
+                break;
+            }
+            case Utils.MY_PERMISSIONS_REQUEST_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    takePicture(null);
+                } else {
+                    Toast.makeText(this, getString(R.string.no_permission_for_storage), Toast.LENGTH_LONG);
+                }
+                break;
             }
         }
     }
@@ -172,19 +182,20 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
 
     @OnClick(R.id.camear)
     public void takePicture(View view) {
-        if (Utils.isCameraPermissionGranted(this)) {
+        if (Utils.isCameraPermissionGranted(this) && Utils.isStoragePermissionGranted(this)) {
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             photoFile = new File(Utils.getPhotosPath(this), Utils.buildPhotosName());
             Uri uri = Uri.fromFile(photoFile);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
             startActivityForResult(intent, REQUEST_TAKE_PHOTO);
         } else {
-            Utils.requestCameraPermission(this);
+            Utils.requestPermissions(this);
         }
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK){
             if (photoFile.exists()) {
                 uploadFile(photoFile, phase, order);

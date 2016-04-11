@@ -27,6 +27,7 @@ import java.util.TimeZone;
 public class Utils {
 
     public static final int MY_PERMISSIONS_REQUEST_CAMERA = 112;
+    public static final int MY_PERMISSIONS_REQUEST_STORAGE = 114;
 
     public static final String SYNC_BROADCAST_NAME = "detailsBroadcast";
     public static final String SYNC_BROADCAST_MESSAGE_KEY = "sync_message";
@@ -118,6 +119,19 @@ public class Utils {
 
     public static boolean isCameraPermissionGranted(Activity activity){
         return checkPermissionGranted(activity, Manifest.permission.CAMERA);
+    }
+
+    public static void requestStoragePermission(Activity activity){
+        requestPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE, MY_PERMISSIONS_REQUEST_STORAGE);
+    }
+
+    public static boolean isStoragePermissionGranted(Activity activity){
+        return checkPermissionGranted(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+    }
+
+    public static void requestPermissions(Activity activity){
+        requestStoragePermission(activity);
+        requestCameraPermission(activity);
     }
 
 
