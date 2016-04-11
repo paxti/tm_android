@@ -15,7 +15,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -62,6 +64,7 @@ public class MainActivity extends MenuActivity
     @Nullable @Bind(R.id.account_email) TextView accountName;
     @Nullable @Bind(R.id.account_full_name) TextView accountEmail;
     @Nullable @Bind(R.id.account_image) ImageView accountImage;
+    
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

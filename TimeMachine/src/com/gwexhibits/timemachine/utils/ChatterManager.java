@@ -7,6 +7,14 @@ import com.salesforce.androidsdk.rest.RestClient;
 import com.salesforce.androidsdk.rest.RestRequest;
 import com.salesforce.androidsdk.rest.RestResponse;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.protocol.HTTP;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+
 /**
  * Created by psyfu on 4/5/2016.
  */
@@ -14,6 +22,8 @@ public class ChatterManager {
 
     final private static String ORDER_FEED_URL = "/services/data/v36.0/chatter/feeds/record/%s/feed-elements";
     final private static String MY_FEED = "/services/data/v36.0/chatter/feeds/to/me/feed-elements";
+    final private static String POST_URL = "/services/data/v36.0/chatter/feed-elements";
+    final private static String COMMMENT_URL = "/services/data/v36.0/chatter/feed-elements/%s/capabilities/comments/items";
 
     private static ChatterManager instance;
     private final RestClient restClient;
@@ -54,6 +64,18 @@ public class ChatterManager {
 
     private RestRequest buildGetRequest(String path){
         return new RestRequest(RestRequest.RestMethod.GET, path, null);
+    }
+
+    private RestRequest buildPostRequest(String path, JSONObject object) throws UnsupportedEncodingException {
+        StringEntity stringEntity = new StringEntity(object.toString(), HTTP.UTF_8);
+        stringEntity.setContentType("application/json");
+        return new RestRequest(RestRequest.RestMethod.POST, path, stringEntity);
+    }
+
+    public RestResponse postNewComment(JSONObject object, String orderId) throws IOException {
+
+        return restClient.sendSync(buildPostRequest(String.format(COMMMENT_URL, orderId), object));
+//        restClient.sendAsync(buildPostRequest(String.format(COMMMENT_URL, orderId), object), callback);
     }
 
 }

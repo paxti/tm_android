@@ -14,6 +14,9 @@ import java.util.Date;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ChatterPost implements Serializable {
 
+    @JsonProperty("id")
+    private String postId;
+
     @JsonProperty("body")
     private ChatterBody chatterBody;
 
@@ -97,6 +100,14 @@ public class ChatterPost implements Serializable {
 
     public void setCapabilities(ChatterEntryCapabilities capabilities) {
         this.capabilities = capabilities;
+    }
+
+    public String getPostId() {
+        return postId;
+    }
+
+    public void setPostId(String postId) {
+        this.postId = postId;
     }
 
     public String getUrl() {
