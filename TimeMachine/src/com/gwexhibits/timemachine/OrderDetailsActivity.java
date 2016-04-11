@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -16,15 +17,11 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.dropbox.core.android.Auth;
 import com.dropbox.core.v2.files.FileMetadata;
-import com.gwexhibits.timemachine.async.DropboxUploader;
 import com.gwexhibits.timemachine.async.UploadFileTask;
 import com.gwexhibits.timemachine.cards.OrderDetailsSections;
 import com.gwexhibits.timemachine.cards.TaskStatusCard;
@@ -38,14 +35,12 @@ import com.gwexhibits.timemachine.utils.DropboxClientFactory;
 import com.gwexhibits.timemachine.utils.NotificationHelper;
 import com.gwexhibits.timemachine.utils.PreferencesManager;
 import com.gwexhibits.timemachine.utils.Utils;
-import com.salesforce.androidsdk.app.SalesforceSDKManager;
 
 import org.json.JSONException;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
 import java.util.ArrayList;
 
 import butterknife.Bind;
@@ -60,6 +55,7 @@ import jp.wasabeef.recyclerview.animators.SlideInLeftAnimator;
 public class OrderDetailsActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final int STATUS_CARD_POSITION = 0;
+    private static final int REQUEST_TAKE_PHOTO = 1;
 
     public static final String ORDER_KEY = "order";
     public static final String PHASE_KEY = "phase";
@@ -145,6 +141,23 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case Utils.MY_PERMISSIONS_REQUEST_CAMERA: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    takePicture(null);
+                } else {
+                    Toast.makeText(this, getString(R.string.no_permission_for_camera), Toast.LENGTH_LONG);
+                }
+                return;
+            }
+        }
+    }
+
     @OnClick(R.id.start_new_task)
     public void startTask(View view) {
         try {
@@ -159,13 +172,28 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
 
     @OnClick(R.id.camear)
     public void takePicture(View view) {
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (Utils.isCameraPermissionGranted(this)) {
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            photoFile = new File(Utils.getPhotosPath(this), Utils.buildPhotosName());
+            Uri uri = Uri.fromFile(photoFile);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+            startActivityForResult(intent, REQUEST_TAKE_PHOTO);
+        } else {
+            Utils.requestCameraPermission(this);
+        }
+    }
 
-        photoFile = new File(Utils.getPhotosPath(this), Utils.buildPhotosName());
-        Uri uri = Uri.fromFile(photoFile);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
-        intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
-        startActivityForResult(intent, 0);
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK){
+            if (photoFile.exists()) {
+                uploadFile(photoFile, phase, order);
+            } else {
+                Toast.makeText(this, getString(R.string.toast_total_failure), Toast.LENGTH_LONG).show();
+            }
+        } else {
+            Toast.makeText(this, getString(R.string.toast_error), Toast.LENGTH_LONG).show();
+        }
     }
 
     private void hideStartNewTaskButton(){
@@ -212,34 +240,6 @@ public class OrderDetailsActivity extends AppCompatActivity implements SharedPre
                     startService(mServiceIntent);
                 }
             }
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch(requestCode) {
-            case 0:
-                switch(resultCode) {
-                    case Activity.RESULT_OK:
-                        if (photoFile.exists()) {
-                            uploadFile(photoFile, phase, order);
-
-                        } else {
-                            Toast.makeText(this,
-                                    getString(R.string.toast_total_failure),
-                                    Toast.LENGTH_LONG).show();
-                        }
-                        break;
-                    case Activity.RESULT_CANCELED:
-                        break;
-                    default:
-                        Toast.makeText(this,
-                                getString(R.string.toast_unsupported_code) + resultCode,
-                                Toast.LENGTH_LONG).show();
-                }
-                break;
-            default:
-                Toast.makeText(this, getString(R.string.toast_error), Toast.LENGTH_LONG).show();
         }
     }
 

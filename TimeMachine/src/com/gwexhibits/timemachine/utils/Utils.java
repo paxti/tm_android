@@ -1,11 +1,17 @@
 package com.gwexhibits.timemachine.utils;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Environment;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 
 import java.text.ParseException;
@@ -19,6 +25,8 @@ import java.util.TimeZone;
  * Created by psyfu on 3/7/2016.
  */
 public class Utils {
+
+    public static final int MY_PERMISSIONS_REQUEST_CAMERA = 112;
 
     public static final String SYNC_BROADCAST_NAME = "detailsBroadcast";
     public static final String SYNC_BROADCAST_MESSAGE_KEY = "sync_message";
@@ -87,4 +95,30 @@ public class Utils {
     public static String transformDateToHuman(Date date){
         return getDateFormatter("EEE, d MMM", STL_TIME_ZONE).format(date);
     }
+
+    public static void requestPermission(Activity activity, String permission, int permissionCode){
+        if (ContextCompat.checkSelfPermission(activity, permission)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(activity, new String[]{permission}, permissionCode);
+        }
+    }
+
+    public static boolean checkPermissionGranted(Activity activity, String permission){
+        if (Build.VERSION.SDK_INT >= 23){
+            return ContextCompat.checkSelfPermission(activity, permission)
+                    == PackageManager.PERMISSION_GRANTED;
+        } else {
+            return true;
+        }
+    }
+
+    public static void requestCameraPermission(Activity activity){
+        requestPermission(activity, Manifest.permission.CAMERA, MY_PERMISSIONS_REQUEST_CAMERA);
+    }
+
+    public static boolean isCameraPermissionGranted(Activity activity){
+        return checkPermissionGranted(activity, Manifest.permission.CAMERA);
+    }
+
+
 }
