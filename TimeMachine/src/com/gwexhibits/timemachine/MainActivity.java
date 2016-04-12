@@ -1,45 +1,31 @@
 package com.gwexhibits.timemachine;
 
-import android.app.FragmentManager;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gwexhibits.timemachine.cards.HistoryCard;
-import com.gwexhibits.timemachine.dummy.DummyContent;
 import com.gwexhibits.timemachine.fragments.TimePickerFragment;
 import com.gwexhibits.timemachine.objects.EndAfterStartException;
 import com.gwexhibits.timemachine.objects.pojo.ChatterPost;
 import com.gwexhibits.timemachine.objects.pojo.Photo;
 import com.gwexhibits.timemachine.objects.pojo.Time;
-import com.gwexhibits.timemachine.services.DropboxService;
-import com.gwexhibits.timemachine.services.OrdersSyncService;
-import com.gwexhibits.timemachine.services.TimesSyncService;
 import com.gwexhibits.timemachine.utils.DbManager;
-import com.gwexhibits.timemachine.utils.Utils;
 import com.salesforce.androidsdk.app.SalesforceSDKManager;
-import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
-
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Date;
 
 import butterknife.Bind;
@@ -51,13 +37,13 @@ public class MainActivity extends MenuActivity
         GalleryFragment.OnGalleryItemInteractionListener,
         SearchFragment.OnFragmentInteractionListener,
         ChatterFragment.OnFragmentInteractionListener,
-        TimePickerFragment.OnCompleteListener,
-        ChatterPostFragment.OnFragmentInteractionListener {
+        TimePickerFragment.OnCompleteListener {
 
     public static final String SEARCH_FRAGMENT = "searchFragment";
     public static final String HISTORY_FRAGMENT = "historyFragment";
     public static final String GALLERY_FRAGMENT = "galleryFragment";
-    public static final String CHATTER_FRAGMENT = "chatterFragment";
+    public static final String CHATTER_FEED_FRAGMENT = "chatterFeedFragment";
+    public static final String CHATTER_POST_FRAGMENT = "chatterPostFragment";
 
     @Bind(R.id.drawer_layout) DrawerLayout drawer;
     @Bind(R.id.nav_view) NavigationView navigationView;
@@ -81,6 +67,16 @@ public class MainActivity extends MenuActivity
 
         setDrawerToogle();
         setNavigationView();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedState) {
+        super.onSaveInstanceState(savedState);
     }
 
     private void setDrawerToogle(){
@@ -148,8 +144,8 @@ public class MainActivity extends MenuActivity
 
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.root_layout, ChatterFragment.newInstance(null), CHATTER_FRAGMENT)
-                    .addToBackStack(CHATTER_FRAGMENT)
+                    .replace(R.id.root_layout, ChatterFragment.newInstance(null), CHATTER_FEED_FRAGMENT)
+                    .addToBackStack(CHATTER_FEED_FRAGMENT)
                     .commit();
 
         }
@@ -218,7 +214,7 @@ public class MainActivity extends MenuActivity
     }
 
     @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+    public void onListFragmentInteraction() {
     }
 
     @Override
@@ -226,17 +222,12 @@ public class MainActivity extends MenuActivity
     }
 
     @Override
-    public void onItemViewClicked(ChatterPost postUrl) {
+    public void onItemViewClicked(ChatterPost post) {
 
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.root_layout, ChatterPostFragment.newInstance(postUrl), "CHATTER_POST")
-                .addToBackStack("CHATTER_POST")
+                .replace(R.id.root_layout, ChatterPostFragment.newInstance(post), CHATTER_POST_FRAGMENT)
+                .addToBackStack(CHATTER_POST_FRAGMENT)
                 .commit();
-    }
-
-    @Override
-    public void onItemViewClicked(String postUrl) {
-
     }
 }

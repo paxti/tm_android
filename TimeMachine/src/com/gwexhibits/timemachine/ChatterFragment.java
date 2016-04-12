@@ -13,14 +13,19 @@ import android.widget.ProgressBar;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.gwexhibits.timemachine.objects.pojo.ChatterCommentEntity;
 import com.gwexhibits.timemachine.objects.pojo.ChatterPost;
 import com.gwexhibits.timemachine.objects.pojo.ChatterFeed;
 import com.gwexhibits.timemachine.utils.ChatterManager;
+import com.gwexhibits.timemachine.utils.Utils;
 import com.salesforce.androidsdk.rest.RestClient;
 import com.salesforce.androidsdk.rest.RestRequest;
 import com.salesforce.androidsdk.rest.RestResponse;
 
+import org.apache.commons.codec.DecoderException;
+
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,15 +34,13 @@ import butterknife.Bind;
 public class ChatterFragment extends Fragment {
 
     private static final String CHATTER_URL = "chatter_url";
+    private static final String POST_OBJECT_KEY = "post_object";
 
-    @Bind(R.id.progressBar) ProgressBar progressBar;
     @Bind(R.id.chatter_cards_list) RecyclerView recyclerView;
 
     private ChatterAdapter chatterAdapter = null;
     private List<ChatterPost> entries = new ArrayList<>();
-    ProgressDialog progress;
-    private String chatterUrl;
-    private RestClient restClient;
+    private ProgressDialog progress;
 
     private OnFragmentInteractionListener mListener;
 
@@ -55,18 +58,14 @@ public class ChatterFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            chatterUrl = getArguments().getString(CHATTER_URL);
-        }
 
-        progress = ProgressDialog.show(getActivity(),
-                getString(R.string.load_dialog_title),
-                getString(R.string.load_dialog_text),
-                true);
-        if (chatterUrl == null){
-            ChatterManager.getInstance().getFeed(onChatterDataReceived);
-        } else {
-            ChatterManager.getInstance().getFeed(chatterUrl, onChatterDataReceived);
+        if (getArguments().get(POST_OBJECT_KEY) == null) {
+            if (getArguments().get(CHATTER_URL) == null) {
+                ChatterManager.getInstance().getFeed(onChatterDataReceived);
+            } else {
+                ChatterManager.getInstance().getFeed(getArguments().getString(CHATTER_URL),
+                        onChatterDataReceived);
+            }
         }
     }
 
@@ -76,17 +75,23 @@ public class ChatterFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_chatter_list, container, false);
 
-        // Set the adapter
         if (view instanceof RecyclerView) {
-            Context context = view.getContext();
             recyclerView = (RecyclerView) view;
-            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+            recyclerView.setHasFixedSize(false);
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             chatterAdapter = new ChatterAdapter(getContext(), entries, onCardClickCallback);
             recyclerView.setAdapter(chatterAdapter);
-            recyclerView.setHasFixedSize(false);
         }
 
         return view;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState){
+        super.onActivityCreated(savedInstanceState);
+        if (getArguments().get(POST_OBJECT_KEY) != null) {
+            setAdapterValues((List<ChatterPost>) getArguments().getSerializable(POST_OBJECT_KEY));
+        }
     }
 
     ChatterAdapter.Callback onCardClickCallback = new ChatterAdapter.Callback() {
@@ -120,16 +125,8 @@ public class ChatterFragment extends Fragment {
                 ObjectMapper mapper = new ObjectMapper();
                 mapper.readerFor(ChatterFeed.class);
                 ObjectReader jsonReader = mapper.readerFor(ChatterFeed.class);
-                ChatterFeed feed = (ChatterFeed) jsonReader.readValue(response.asString());
-                entries.clear();
-
-                for (ChatterPost post : feed.getChatterchatterPosts()){
-                    if (!post.getElementType().equals("Bundle")){
-                        entries.add(post);
-                    }
-                }
-                chatterAdapter.notifyDataSetChanged();
-                progress.dismiss();
+                ChatterFeed feed = ((ChatterFeed) jsonReader.readValue(response.asString()));
+                setAdapterValues(feed.getChatterchatterPosts());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -143,8 +140,28 @@ public class ChatterFragment extends Fragment {
 
     public interface OnFragmentInteractionListener {
         void onItemViewClicked(ChatterPost post);
-
     }
 
+    /*@Override
+    public void onSaveInstanceState(Bundle savedState) {
+        super.onSaveInstanceState(savedState);
+        savedState.putSerializable(POST_OBJECT_KEY, (Serializable) chatterAdapter.getPosts());
+    }*/
+
+    private void setAdapterValues(List<ChatterPost> comments){
+
+        entries.clear();
+        for (int i = 0; i < comments.size(); i++ ){
+
+            if (!comments.get(i).getElementType().equals("Bundle")){
+                entries.add(comments.get(i));
+//                chatterAdapter.notifyItemInserted(i);
+            }
+        }
+        chatterAdapter.notifyDataSetChanged();
+        getArguments().putSerializable(POST_OBJECT_KEY, (Serializable) chatterAdapter.getPosts());
+
+       // progress.dismiss();
+    }
 
 }

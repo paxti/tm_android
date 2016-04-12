@@ -50,7 +50,7 @@ public class ChatterAdapter extends RecyclerView.Adapter<ChatterCardView>  {
         holder.commentsCounter.setText(posts.get(position).getCapabilities().getTotalInString());
         Picasso.with(context)
                 .load(posts.get(position).getActor().getPhoto().getPhotoUrl())
-                .placeholder(R.drawable.ic_build_black_24dp)
+                .placeholder(R.drawable.default_profile)
                 .error(R.drawable.ic_cancel_black_24dp)
                 .fit()
                 .into(holder.icon);
@@ -59,5 +59,9 @@ public class ChatterAdapter extends RecyclerView.Adapter<ChatterCardView>  {
     @Override
     public int getItemCount() {
         return posts.size();
+    }
+
+    public List<ChatterPost> getPosts(){
+        return this.posts;
     }
 }

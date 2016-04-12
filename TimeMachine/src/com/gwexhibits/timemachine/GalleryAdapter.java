@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.gwexhibits.timemachine.dummy.DummyContent.DummyItem;
 import com.gwexhibits.timemachine.objects.pojo.Photo;
 import com.squareup.picasso.Picasso;
 

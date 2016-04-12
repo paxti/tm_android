@@ -7,6 +7,7 @@ import com.gwexhibits.timemachine.utils.Utils;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by psyfu on 4/5/2016.
@@ -124,5 +125,9 @@ public class ChatterPost implements Serializable {
         } else {
             return  getChatterBody().getContent();
         }
+    }
+
+    public List<ChatterCommentEntity> getComments(){
+        return this.getCapabilities().getCommentsPage().getPage().getCommentEntityList();
     }
 }

@@ -50,12 +50,36 @@ public class ChatterManager {
         sendChatterRequest(buildGetRequest(url), callback);
     }
 
+    public RestResponse getPostComments(String orderId) throws IOException {
+        return restClient.sendSync(buildGetRequest(String.format(COMMMENT_URL, orderId)));
+    }
+
+    public RestResponse getFromUrl(String url) throws IOException {
+        return sendChatterRequest(buildGetRequest(url));
+    }
+
+    public void getFromUrlAsync(String url,  RestClient.AsyncRequestCallback callback) {
+        sendChatterRequest(buildGetRequest(url), callback);
+    }
+
+    public RestResponse getFeed() throws IOException {
+        return sendChatterRequest(buildGetRequest(MY_FEED));
+    }
+
+    public RestResponse getFeed(String orderId) throws IOException {
+        return sendChatterRequest(buildGetRequest(String.format(ORDER_FEED_URL, orderId)));
+    }
+
     public void getFeed(String orderId, RestClient.AsyncRequestCallback callback){
         sendChatterRequest(buildGetRequest(String.format(ORDER_FEED_URL, orderId)), callback);
     }
 
     public void getFeed(RestClient.AsyncRequestCallback callback){
         sendChatterRequest(buildGetRequest(MY_FEED), callback);
+    }
+
+    private RestResponse sendChatterRequest(RestRequest restRequest) throws IOException {
+        return restClient.sendSync(restRequest);
     }
 
     private void sendChatterRequest(RestRequest restRequest, RestClient.AsyncRequestCallback callback) {

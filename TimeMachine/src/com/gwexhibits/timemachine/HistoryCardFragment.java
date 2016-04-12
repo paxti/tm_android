@@ -15,8 +15,6 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.gwexhibits.timemachine.cards.HistoryCard;
-import com.gwexhibits.timemachine.dummy.DummyContent;
-import com.gwexhibits.timemachine.dummy.DummyContent.DummyItem;
 import com.gwexhibits.timemachine.fragments.ChangeOrderFragment;
 import com.gwexhibits.timemachine.fragments.TimePickerFragment;
 import com.gwexhibits.timemachine.objects.EndAfterStartException;
@@ -251,7 +249,7 @@ public class HistoryCardFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnListFragmentInteractionListener {
-        void onListFragmentInteraction(DummyItem item);
+        void onListFragmentInteraction();
     }
 
 
