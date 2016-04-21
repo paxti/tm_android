@@ -15,6 +15,7 @@ import android.support.v4.content.ContextCompat;
 import android.util.Base64;
 
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
 import org.apache.commons.codec.DecoderException;
 
@@ -160,5 +161,12 @@ public class Utils {
         oos.writeObject(o);
         oos.close();
         return Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+    }
+
+    public static void hideKeyboard(Context context, View view){
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }

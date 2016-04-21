@@ -10,6 +10,7 @@ import android.text.Html;
 
 import com.gwexhibits.timemachine.OrderDetailsActivity;
 import com.gwexhibits.timemachine.R;
+import com.gwexhibits.timemachine.SplashScreenActivity;
 import com.gwexhibits.timemachine.broadcast.NotificationReceiver;
 import com.gwexhibits.timemachine.objects.OrderDetails;
 import com.gwexhibits.timemachine.objects.pojo.Order;
@@ -28,7 +29,7 @@ public class NotificationHelper {
 
     public static void createNotification(Context context, Order currentOrder){
 
-        Intent showOrderDetails = new Intent(context, OrderDetailsActivity.class);
+        Intent showOrderDetails = new Intent(context, SplashScreenActivity.class);
         showOrderDetails.putExtra(OrderDetailsActivity.ORDER_KEY, currentOrder.toString());
         PendingIntent goToOrder = PendingIntent.getActivity(
                 context, (int) System.currentTimeMillis(), showOrderDetails, 0);

@@ -134,6 +134,14 @@ public class Time implements Serializable {
         return endTime;
     }
 
+    public Date getEndTimeForPicker(){
+        if (endTime == null){
+            return startTime;
+        } else {
+            return endTime;
+        }
+    }
+
     public void setEndTime(Date endTime) {
         this.endTime = endTime;
     }
@@ -184,6 +192,14 @@ public class Time implements Serializable {
 
     public void setLocallyDeleted(Boolean locallyDeleted) {
         this.locallyDeleted = locallyDeleted;
+    }
+
+    public String getSyncStatus(){
+        if (this.local){
+            return "Not synced";
+        } else {
+            return "Synced";
+        }
     }
 
     public Time start(){

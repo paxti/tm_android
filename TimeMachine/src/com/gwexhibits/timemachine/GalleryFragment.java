@@ -73,7 +73,6 @@ public class GalleryFragment extends Fragment implements GalleryAdapter.OnGaller
             setGalleryAdapter();
         }
 
-
         return view;
     }
 

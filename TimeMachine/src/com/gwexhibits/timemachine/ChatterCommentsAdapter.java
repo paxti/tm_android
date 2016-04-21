@@ -12,10 +12,6 @@ import com.gwexhibits.timemachine.ChatterCardView;
 import com.gwexhibits.timemachine.ChatterCommentView;
 import com.gwexhibits.timemachine.R;
 import com.gwexhibits.timemachine.objects.pojo.ChatterCommentEntity;
-import com.marshalchen.ultimaterecyclerview.URLogs;
-import com.marshalchen.ultimaterecyclerview.UltimateRecyclerviewViewHolder;
-import com.marshalchen.ultimaterecyclerview.UltimateViewAdapter;
-import com.marshalchen.ultimaterecyclerview.quickAdapter.easyRegularAdapter;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -25,7 +21,11 @@ import it.gmariotti.cardslib.library.recyclerview.internal.BaseRecyclerViewAdapt
 /**
  * Created by psyfu on 4/11/2016.
  */
-public class ChatterCommentsAdapter extends easyRegularAdapter<ChatterCommentEntity, ChatterCommentView> {
+
+public class ChatterCommentsAdapter {
+
+}
+/*public class ChatterCommentsAdapter extends easyRegularAdapter<ChatterCommentEntity, ChatterCommentView> {
 
     private Context context;
 
@@ -63,4 +63,4 @@ public class ChatterCommentsAdapter extends easyRegularAdapter<ChatterCommentEnt
     public final void removeLastOne() {
         removeLast();
     }
-}
+}*/

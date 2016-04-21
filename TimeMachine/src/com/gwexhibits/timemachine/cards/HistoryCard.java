@@ -1,7 +1,6 @@
 package com.gwexhibits.timemachine.cards;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -16,7 +15,6 @@ import java.io.Serializable;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import it.gmariotti.cardslib.library.internal.Card;
 
 /**
@@ -30,7 +28,7 @@ public class HistoryCard extends Card implements Serializable {
     @Bind(R.id.history_record_change_date) Button changeDate;
     @Bind(R.id.history_record_change_phase) Button changePhase;
     @Bind(R.id.history_record_sfid) TextView sfid;
-    @Bind(R.id.textView2) TextView textView2;
+    @Bind(R.id.textView2) TextView syncStatus;
 
     private Time time;
     private Order order;
@@ -49,7 +47,7 @@ public class HistoryCard extends Card implements Serializable {
         changeDate.setText(Utils.transformDateToHuman(time.getStartTime()));
         sfid.setText(order.getTitleForOptions());
         changePhase.setText(time.getPhase());
-        textView2.setText(time.getEntyIdInString());
+        syncStatus.setText(time.getSyncStatus());
     }
 
     @Override

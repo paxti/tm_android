@@ -1,5 +1,6 @@
 package com.gwexhibits.timemachine.objects.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -31,6 +32,7 @@ public class ChatterBody implements Serializable {
         this.segments.add(segment);
     }
 
+    @JsonIgnore
     public String getContent(){
 
         String res = "";

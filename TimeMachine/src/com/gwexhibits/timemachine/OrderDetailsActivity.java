@@ -37,6 +37,7 @@ import com.gwexhibits.timemachine.utils.DbManager;
 import com.gwexhibits.timemachine.utils.DropboxClientFactory;
 import com.gwexhibits.timemachine.utils.PreferencesManager;
 import com.gwexhibits.timemachine.utils.Utils;
+import com.salesforce.androidsdk.rest.RestResponse;
 
 
 import org.apache.commons.codec.DecoderException;
@@ -44,6 +45,7 @@ import org.apache.commons.codec.DecoderException;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,26 +53,24 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class OrderDetailsActivity extends MenuActivity implements ChatterFragment.OnFragmentInteractionListener {
+public class OrderDetailsActivity extends MenuActivity {
 
-    private static final int STATUS_CARD_POSITION = 0;
     private static final int REQUEST_TAKE_PHOTO = 1;
+    private static final String PATH_TO_PHOTO = "path_to_photo";
 
     public static final String ORDER_KEY = "order";
     public static final String PHASE_KEY = "phase";
 
-    @Bind(R.id.order_details_collapse_toolbar) CollapsingToolbarLayout collapsingToolbar;
     @Bind(R.id.order_details_toolbar) Toolbar toolbar;
     @Bind(R.id.order_details_viewpager) ViewPager viewPager;
     @Bind(R.id.order_details_tabs) TabLayout tabLayout;
-    @Bind(R.id.subtitle) TextView subtitle;
-    @Bind(R.id.camear) FloatingActionButton camera;
 
     private String phase = null;
     private Order order = null;
     private Time time = null;
     private File photoFile = null;
     private int backButtonCount;
+    private ViewPagerAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,41 +78,50 @@ public class OrderDetailsActivity extends MenuActivity implements ChatterFragmen
         setContentView(R.layout.activity_order_details);
         ButterKnife.bind(this);
 
+        if (savedInstanceState != null && savedInstanceState.containsKey(PATH_TO_PHOTO)){
+            photoFile = new File(savedInstanceState.getString(PATH_TO_PHOTO));
+        }
+
         backButtonCount = 0;
         setArguments();
         setToolbar();
         setTabs();
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        if (photoFile != null) {
+            savedInstanceState.putString(PATH_TO_PHOTO, photoFile.getAbsolutePath());
+        }
+        super.onSaveInstanceState(savedInstanceState);
+
+    }
+
     private void setToolbar(){
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(getOrder().getTitleForOptions());
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        collapsingToolbar.setTitleEnabled(false);
-        subtitle.setText("Some text here");
     }
 
     private void setTabs(){
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFrag(
                 DetailsFragment.newInstance(getOrder(), getPhase()), getString(R.string.order_details_tab_name));
-        adapter.addFrag(ChatterFragment.newInstance(getOrder().getId()), getString(R.string.order_chatter_tab_name));
+        if (Utils.isInternetAvailable(this)) {
+            adapter.addFrag(ChatterChat.newInstance(getOrder().getId(), ChatterChat.RECORDS_FEED_TYPE), getString(R.string.order_chatter_tab_name));
+        }
         viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
     }
 
     private void setArguments(){
-        boolean t = PreferencesManager.getInstance().isCurrentTaskRunning();
-        String s = PreferencesManager.getInstance().test();
+        PreferencesManager.initializeInstance(this);
         if (PreferencesManager.getInstance().isCurrentTaskRunning()){
             try {
                 setOrder(PreferencesManager.getInstance().getCurrentOrder());
-                setTime(PreferencesManager.getInstance().getCurrentTask());
-            } catch (DecoderException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
+                setTime(DbManager.getInstance().getTime(PreferencesManager.getInstance().getCurrentTask().getEntyIdInString()));
+            } catch (Exception e) {
+                Toast.makeText(this, getString(R.string.error_message), Toast.LENGTH_LONG).show();
                 e.printStackTrace();
             }
         } else {
@@ -123,6 +132,20 @@ public class OrderDetailsActivity extends MenuActivity implements ChatterFragmen
 
     @Override
     public void onBackPressed() {
+
+        //TODO: DIRTY FIX
+        FragmentManager fm = getSupportFragmentManager();
+        for (Fragment frag : fm.getFragments()) {
+            if (frag.isVisible()) {
+                FragmentManager childFm = frag.getChildFragmentManager();
+                if (childFm.getBackStackEntryCount() > 1) {
+                    childFm.popBackStack();
+                    return;
+                }
+            }
+        }
+
+
         if (!PreferencesManager.getInstance().isCurrentTaskRunning()) {
             Intent backToMain = new Intent(this, MainActivity.class);
             startActivity(backToMain);
@@ -166,13 +189,14 @@ public class OrderDetailsActivity extends MenuActivity implements ChatterFragmen
         }
     }
 
-    @OnClick(R.id.camear)
+    @OnClick(R.id.camera)
     public void takePicture(View view) {
         if (Utils.isCameraPermissionGranted(this) && Utils.isStoragePermissionGranted(this)) {
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             photoFile = new File(Utils.getPhotosPath(this), Utils.buildPhotosName());
             Uri uri = Uri.fromFile(photoFile);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri );
+            intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
             startActivityForResult(intent, REQUEST_TAKE_PHOTO);
         } else {
             Utils.requestPermissions(this);
@@ -210,8 +234,13 @@ public class OrderDetailsActivity extends MenuActivity implements ChatterFragmen
                             getString(R.string.toast_uploaded),
                             Toast.LENGTH_SHORT).show();
 
-                    file.delete();
-                    DbManager.getInstance().deletePhoto(photo);
+                    if (file.delete()) {
+                        DbManager.getInstance().deletePhoto(photo);
+                    } else {
+                        Toast.makeText(OrderDetailsActivity.this,
+                                getString(R.string.toast_cant_delete),
+                                Toast.LENGTH_SHORT).show();
+                    }
                 }
 
                 @Override
@@ -264,11 +293,6 @@ public class OrderDetailsActivity extends MenuActivity implements ChatterFragmen
                 .show();
     }
 
-    @Override
-    public void onItemViewClicked(ChatterPost postUrl) {
-        Log.d("Test", postUrl.toString());
-    }
-
     static class ViewPagerAdapter extends FragmentPagerAdapter {
 
         private final List<Fragment> fragmentList = new ArrayList<>();
@@ -300,7 +324,7 @@ public class OrderDetailsActivity extends MenuActivity implements ChatterFragmen
     }
 
     public String getPhase() {
-        if (this.phase == null && this.time != null){
+        if (this.time != null){
             return this.time.getPhase();
         } else {
             return this.phase;

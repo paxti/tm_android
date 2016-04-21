@@ -21,6 +21,7 @@ import com.gwexhibits.timemachine.objects.pojo.Views;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.objects.sf.PhotoObject;
 import com.gwexhibits.timemachine.objects.sf.TimeObject;
+import com.gwexhibits.timemachine.utils.DbManager;
 import com.gwexhibits.timemachine.utils.Utils;
 import com.quinny898.library.persistentsearch.SearchBox;
 import com.quinny898.library.persistentsearch.SearchResult;
@@ -35,6 +36,7 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by psyfu on 2/26/2016.
@@ -78,19 +80,12 @@ public class SearchBarListener implements SearchBox.SearchListener {
     @Override
     public void onSearchTermChanged(String term) {
 
-        QuerySpec querySpec = QuerySpec.buildLikeQuerySpec(OrderObject.ORDER_SUPE,
-                OrderObject.SFID,
-                '%' + term + '%',
-                null,
-                null,
-                20);
-
         ArrayList<SearchResult> results = new ArrayList<SearchResult>();
         try {
-            JSONArray array = smartStore.query(querySpec, 0);
+            List<Order> orders = DbManager.getInstance().getOrdersBySFIDOrId(term, 20);
 
-            for(int i = 0; i < array.length(); i++ ){
-                results.add(createOption((Order)jsonReader.readValue(array.getJSONObject(i).toString())));
+            for(int i = 0; i < orders.size(); i++ ){
+                results.add(createOption(orders.get(i)));
             }
         } catch (JSONException e) {
             //TODO: Show error

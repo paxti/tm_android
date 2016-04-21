@@ -22,10 +22,6 @@ public class MenuActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
-
-        MenuItem searchItem = menu.findItem(R.id.search);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-        searchItem.setVisible(true);
         return true;
     }
 
@@ -82,6 +78,11 @@ public class MenuActivity extends AppCompatActivity {
             }
 
             return true;
+        }
+
+        if (id == android.R.id.home){
+            Intent backToMain = new Intent(this, MainActivity.class);
+            startActivity(backToMain);
         }
 
         return super.onOptionsItemSelected(item);

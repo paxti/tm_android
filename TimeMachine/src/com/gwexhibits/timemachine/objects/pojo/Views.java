@@ -25,4 +25,11 @@ public class Views {
         @JsonProperty(TimeObject.ORDER)
         private Order order;
     }
+
+    public static class Send {
+
+        @JsonIgnore
+        private ChatterEntryCapabilities capabilities;
+
+    }
 }

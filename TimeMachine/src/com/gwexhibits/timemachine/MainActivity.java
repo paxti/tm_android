@@ -4,6 +4,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -20,12 +22,13 @@ import com.gwexhibits.timemachine.objects.pojo.ChatterPost;
 import com.gwexhibits.timemachine.objects.pojo.Photo;
 import com.gwexhibits.timemachine.objects.pojo.Time;
 import com.gwexhibits.timemachine.utils.DbManager;
+import com.gwexhibits.timemachine.utils.Utils;
 import com.salesforce.androidsdk.app.SalesforceSDKManager;
+import com.salesforce.androidsdk.rest.RestResponse;
 
 import org.json.JSONException;
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Date;
 
 import butterknife.Bind;
@@ -36,8 +39,8 @@ public class MainActivity extends MenuActivity
         HistoryCardFragment.OnListFragmentInteractionListener,
         GalleryFragment.OnGalleryItemInteractionListener,
         SearchFragment.OnFragmentInteractionListener,
-        ChatterFragment.OnFragmentInteractionListener,
-        TimePickerFragment.OnCompleteListener {
+        TimePickerFragment.OnCompleteListener,
+        ChatterMessageSectionFragment.OnFragmentInteractionListener {
 
     public static final String SEARCH_FRAGMENT = "searchFragment";
     public static final String HISTORY_FRAGMENT = "historyFragment";
@@ -98,18 +101,28 @@ public class MainActivity extends MenuActivity
         accountName.setText(SalesforceSDKManager.getInstance().getUserAccountManager().getCurrentUser().getDisplayName());
         accountEmail.setText(SalesforceSDKManager.getInstance().getUserAccountManager().getCurrentUser().getEmail());
 
-        /*Picasso.with(this)
-                .load(SalesforceSDKManager.getInstance().getUserAccountManager().getCurrentUser().getPhotoUrl())
-                .into(accountImage);*/
-
         navigationView.getMenu().getItem(0).setChecked(true);
     }
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
+
+            //TODO: DIRTY FIX
+            FragmentManager fm = getSupportFragmentManager();
+            for (Fragment frag : fm.getFragments()) {
+                if (frag != null && frag.isVisible()) {
+                    FragmentManager childFm = frag.getChildFragmentManager();
+                    if (childFm.getBackStackEntryCount() > 1) {
+                        childFm.popBackStack();
+                        return;
+                    }
+                }
+            }
+
             super.onBackPressed();
         }
     }
@@ -140,15 +153,21 @@ public class MainActivity extends MenuActivity
                     .addToBackStack(GALLERY_FRAGMENT)
                     .commit();
 
-        } else if (id == R.id.nav_chatter) {
+    } else if (id == R.id.nav_chatter) {
 
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.root_layout, ChatterFragment.newInstance(null), CHATTER_FEED_FRAGMENT)
-                    .addToBackStack(CHATTER_FEED_FRAGMENT)
-                    .commit();
-
-        }
+            if (Utils.isInternetAvailable(this)) {
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.root_layout, ChatterChat.newInstance(
+                                SalesforceSDKManager.getInstance().getUserAccountManager().getStoredUserId(),
+                                ChatterChat.TO_ME_FEED_TYPE),
+                                CHATTER_FEED_FRAGMENT)
+                        .addToBackStack(CHATTER_FEED_FRAGMENT)
+                        .commit();
+            } else {
+                Toast.makeText(this, getString(R.string.internet_needed), Toast.LENGTH_LONG).show();
+            }
+    }
 
         drawer.closeDrawer(GravityCompat.START);
         return true;
@@ -194,7 +213,7 @@ public class MainActivity extends MenuActivity
 
     private void saveTimeObject(Time timeObject, HistoryCard card){
         try {
-            Time newTimeObject = DbManager.getInstance().updateTime(timeObject);
+            DbManager.getInstance().updateTime(timeObject);
             HistoryCardFragment historyFragment = (HistoryCardFragment) getSupportFragmentManager().findFragmentByTag(HISTORY_FRAGMENT);
             historyFragment.updateData();
         } catch (JSONException e) {
@@ -222,12 +241,12 @@ public class MainActivity extends MenuActivity
     }
 
     @Override
-    public void onItemViewClicked(ChatterPost post) {
+    public void onChatterPostSentSuccess(RestResponse response) {
 
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.root_layout, ChatterPostFragment.newInstance(post), CHATTER_POST_FRAGMENT)
-                .addToBackStack(CHATTER_POST_FRAGMENT)
-                .commit();
+    }
+
+    @Override
+    public void onChatterPostSentError(Exception exception) {
+
     }
 }

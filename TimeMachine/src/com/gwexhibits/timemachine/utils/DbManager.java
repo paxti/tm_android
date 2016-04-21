@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.gwexhibits.timemachine.objects.pojo.Order;
 import com.gwexhibits.timemachine.objects.pojo.Photo;
 import com.gwexhibits.timemachine.objects.pojo.Time;
+import com.gwexhibits.timemachine.objects.pojo.Views;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.objects.sf.PhotoObject;
 import com.gwexhibits.timemachine.objects.sf.TimeObject;
@@ -78,6 +79,46 @@ public class DbManager {
         return (Order) jsonReader.readValue(res);
     }
 
+    public List<Order> getOrdersBySFIDOrId(String sfid,int limit) throws JSONException, IOException {
+
+        QuerySpec querySpecBySFID = QuerySpec.buildLikeQuerySpec(OrderObject.ORDER_SUPE,
+                OrderObject.SFID,
+                '%' + sfid + '%',
+                null,
+                null,
+                limit);
+
+        QuerySpec querySpecById = QuerySpec.buildLikeQuerySpec(OrderObject.ORDER_SUPE,
+                OrderObject.ORDER_NUMBER,
+                '%' + sfid + '%',
+                null,
+                null,
+                limit);
+
+        mapper = new ObjectMapper();
+        mapper.writerWithView(Views.Full.class);
+        ObjectReader jsonReader = mapper.reader(Order.class);
+
+        JSONArray resBySFID = smartStore.query(querySpecBySFID, 0);
+        JSONArray resById = smartStore.query(querySpecById, 0);
+
+        List<Order> orders = new ArrayList<>();
+
+        for (int i = 0; i < resBySFID.length(); i++){
+            orders.add((Order) jsonReader.readValue(resBySFID.getJSONObject(i).toString()));
+        }
+
+        for (int i = 0; i < resById.length(); i++){
+
+            Order order = (Order) jsonReader.readValue(resById.getJSONObject(i).toString());
+            if (!orders.contains(order)){
+                orders.add(order);
+            }
+        }
+        return  orders;
+
+    }
+
     public Time saveTime(Time timeEntry) throws JSONException, IOException {
         mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
         mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
@@ -106,15 +147,31 @@ public class DbManager {
     }
 
     public Time stopTask() throws IOException, JSONException, DecoderException, ClassNotFoundException {
-        Time currentTime = PreferencesManager.getInstance().getCurrentTask();
+        Time currentTime = getTime(PreferencesManager.getInstance().getCurrentTask().getEntyIdInString());
         currentTime.stop();
         return updateTime(currentTime);
     }
 
     public Time updateTimeNote(String note) throws IOException, JSONException, DecoderException, ClassNotFoundException {
-        Time currentTime = PreferencesManager.getInstance().getCurrentTask();
+        Time currentTime = getTime(PreferencesManager.getInstance().getCurrentTask().getEntyIdInString());
         currentTime.setNote(note);
         return updateTime(currentTime);
+    }
+
+    public Time getTime(String id) throws JSONException, IOException {
+        QuerySpec query = QuerySpec.buildExactQuerySpec(TimeObject.TIME_SUPE,
+                SmartStore.SOUP_ENTRY_ID,
+                id,
+                null,
+                null,
+                1);
+
+        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        ObjectReader jsonReader = mapper.reader(Time.class);
+
+        return (Time) jsonReader.readValue(smartStore.query(query, 0).get(0).toString());
     }
 
     public Photo savePhoto(Photo photoEntry) throws JSONException, IOException {
@@ -152,9 +209,7 @@ public class DbManager {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         ObjectReader jsonReader = mapper.reader(Time.class);
-
         JSONArray res = getAllInSoupSortNewFirst(TimeObject.TIME_SUPE);
-
         List<Time> photos = new ArrayList<>();
 
         for (int i = 0; i < res.length(); i++){

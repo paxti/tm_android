@@ -1,10 +1,9 @@
 package com.gwexhibits.timemachine;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,16 +16,13 @@ import com.gwexhibits.timemachine.cards.TaskStatusCard;
 import com.gwexhibits.timemachine.objects.OrderDetails;
 import com.gwexhibits.timemachine.objects.pojo.Order;
 import com.gwexhibits.timemachine.services.TimesSyncService;
-import com.gwexhibits.timemachine.utils.DbManager;
 import com.gwexhibits.timemachine.utils.PreferencesManager;
 import com.gwexhibits.timemachine.utils.Utils;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.util.ArrayList;
 
 import butterknife.Bind;
+import butterknife.ButterKnife;
 import it.gmariotti.cardslib.library.internal.Card;
 import it.gmariotti.cardslib.library.recyclerview.internal.CardArrayRecyclerViewAdapter;
 import it.gmariotti.cardslib.library.recyclerview.view.CardRecyclerView;
@@ -62,18 +58,26 @@ public class DetailsFragment extends Fragment implements SharedPreferences.OnSha
         if (getArguments() != null) {
             order = (Order) getArguments().getSerializable(ORDER_KEY);
             phase = getArguments().getString(PHASE_KEY);
-            /*DataLoader runner = new DataLoader();
-            runner.execute(orderId);*/
         }
     }
 
     @Override
     public void onResume(){
         super.onResume();
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(
-                PreferencesManager.PREF_NAME,
-                Context.MODE_PRIVATE);
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
+        PreferencesManager.getInstance().getPreferences().registerOnSharedPreferenceChangeListener(this);
+
+        if ((cards.get(0) instanceof TaskStatusCard)){
+            cards.remove(0);
+        }
+        cards.add(0, createStatusCard());
+        cardArrayAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public  void  onPause() {
+        super.onPause();
+        PreferencesManager.getInstance().getPreferences().unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -82,25 +86,20 @@ public class DetailsFragment extends Fragment implements SharedPreferences.OnSha
 
         View view = inflater.inflate(R.layout.fragment_order_details_list, container, false);
 
-        /*if(PreferencesManager.getInstance().isCurrentTaskRunning()){
-            hideStartNewTaskButton();
-        }*/
-
         if (view instanceof RecyclerView) {
-            Context context = view.getContext();
-            recyclerView = (CardRecyclerView) view;
-            recyclerView.setHasFixedSize(false);
-            recyclerView.setLayoutManager(new LinearLayoutManager(context));
-
             cardArrayAdapter = new CardArrayRecyclerViewAdapter(getContext(), cards);
+            recyclerView = (CardRecyclerView) view;
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerView.setAdapter(cardArrayAdapter);
             recyclerView.setHasFixedSize(false);
         }
 
-        TaskStatusCard card = new TaskStatusCard(getContext(), R.layout.order_details_status_card);
-        card.setData(order, phase);
-        cards.add(card);
+        return view;
+    }
 
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         int position = cards.size();
         OrderDetails details = new OrderDetails(order);
         for (OrderDetailsSections section : details.getDetailsSection()){
@@ -113,97 +112,30 @@ public class DetailsFragment extends Fragment implements SharedPreferences.OnSha
             }
         }
 
-        return view;
+        if (order.getDropboxLink() != null && !order.getDropboxLink().equals("")){
+            ButterKnife.findById(getActivity(), R.id.camera).setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        /*if (key.equals(PreferencesManager.CURRENT_TASK_KEY)) {
+        if (key.equals(PreferencesManager.CURRENT_TASK_KEY)) {
             if(PreferencesManager.getInstance().isCurrentTaskRunning()){
-                hideStartNewTaskButton();
+                ((TaskStatusCard)cards.get(0)).showStopButton();
             }else{
-                showStartNewTaskButton();
-                if (Utils.isInternetAvailable(getActivity())) {
-                    Intent mServiceIntent = new Intent(getActivity(), TimesSyncService.class);
-                    getActivity().startService(mServiceIntent);
-                }
+                ((TaskStatusCard)cards.get(0)).showStartButton();
             }
-        }*/
+
+            if (Utils.isInternetAvailable(getContext())) {
+                Intent mServiceIntent = new Intent(getContext(), TimesSyncService.class);
+                getContext().startService(mServiceIntent);
+            }
+        }
     }
 
-    private void hideStartNewTaskButton(){
-        /*CoordinatorLayout.LayoutParams p = (CoordinatorLayout.LayoutParams) startNewTaskButton.getLayoutParams();
-        p.setAnchorId(View.NO_ID);
-        startNewTaskButton.setLayoutParams(p);
-        startNewTaskButton.setVisibility(View.GONE);
-        */
-
+    private Card createStatusCard(){
         TaskStatusCard card = new TaskStatusCard(getContext(), R.layout.order_details_status_card);
-        addCardToPosition(card, STATUS_CARD_POSITION);
+        card.setData(order, phase);
+        return card;
     }
-
-    private void showStartNewTaskButton(){
-        /*CoordinatorLayout.LayoutParams p = (CoordinatorLayout.LayoutParams) startNewTaskButton.getLayoutParams();
-        p.setAnchorId(R.id.app_bar);
-        startNewTaskButton.setLayoutParams(p);*/
-
-//        startNewTaskButton.setVisibility(View.VISIBLE);
-        removeCardFromPosition(STATUS_CARD_POSITION);
-    }
-
-    private void addCardToPosition(Card card, int position){
-        cards.add(position, card);
-        cardArrayAdapter.notifyItemChanged(position);
-        cardArrayAdapter.notifyItemInserted(position);
-        recyclerView.scrollToPosition(position);
-    }
-
-    private void removeCardFromPosition(int position) {
-        cards.remove(position);
-        cardArrayAdapter.notifyItemRemoved(position);
-        recyclerView.scrollToPosition(position);
-    }
-
-    /*private class DataLoader extends AsyncTask<Long, Integer, String> {
-
-        Order currentOrder;
-
-        @Override
-        protected String doInBackground(Long... params) {
-
-            try {
-                if (params[0] > 0) {
-                    currentOrder = DbManager.getInstance().getOrderObject(params[0]);
-                }else{
-                    currentOrder = DbManager.getInstance().getOrderObject();
-                }
-
-            } catch (JSONException jsonex) {
-                jsonex.printStackTrace();
-            } catch (IOException ioex) {
-                ioex.printStackTrace();
-            }
-            return currentOrder.getId();
-        }
-
-        protected void onPostExecute(String result) {
-            loadDataFromDB(currentOrder);
-        }
-
-        private void loadDataFromDB(Order order){
-
-            int position = cards.size();
-            OrderDetails details = new OrderDetails(order);
-
-            for (OrderDetailsSections section : details.getDetailsSection()){
-                if (section.getListItems().size() > 0) {
-                    cards.add(section);
-                    section.init();
-
-                    cardArrayAdapter.notifyItemInserted(position);
-                    position++;
-                }
-            }
-        }
-    }*/
 }

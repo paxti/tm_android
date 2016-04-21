@@ -76,6 +76,7 @@ public class SearchFragment extends Fragment {
         search.setInputType(InputType.TYPE_CLASS_NUMBER);
         search.setSearchListener(new SearchBarListener(search, getActivity()));
         search.setMaxLength(10);
+        search.setLogoText(getString(R.string.search_hint));
 
         appVersion.setText("v " + BuildConfig.VERSION_NAME);
 

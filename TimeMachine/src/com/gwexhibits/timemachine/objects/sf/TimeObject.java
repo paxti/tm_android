@@ -38,6 +38,8 @@ public class TimeObject extends SalesforceObject {
     public static final String LOCALY_UPDATED = "__locally_updated__";
     public static final String LOCALY_DELETED = "__locally_deleted__";
 
+    public static final String ORDER_STATUS = "order__r.Status";
+
 
 
     public static IndexSpec[] TIMES_INDEX_SPEC = {
@@ -113,10 +115,9 @@ public class TimeObject extends SalesforceObject {
     }
 
     public static String buildWhereRequest(){
-        Log.d("TIME OBJECT", SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser().getUserId());
         return "CreatedById='" +
                 SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser().getUserId() +
-                "'";
+                "'" + " AND " + ORDER_STATUS + " != " + "'Complited'";
     }
 
     public static JSONObject createTimeObjectStartedNow(String orderId, String phase) throws JSONException{

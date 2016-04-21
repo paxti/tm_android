@@ -1,0 +1,51 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             tools:context=".ChatterMessageSectionFragment">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <com.gwexhibits.timemachine.ui.ChatterDelayAutoCompleteTextView
+                android:id="@+id/message_text"
+                android:inputType="textMultiLine"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:minLines="3"
+                android:maxLines="5"
+                android:scrollbars="vertical"
+                android:imeOptions="flagNoExtractUi|actionSearch"/>
+
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="16dp"
+                android:visibility="gone"/>
+
+        </RelativeLayout>
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:id="@+id/send_chatter_message"
+            android:src="@drawable/send"
+            android:layout_alignBottom="@+id/message_text"
+            android:layout_alignParentEnd="true"/>
+
+    </LinearLayout>
+
+</FrameLayout>

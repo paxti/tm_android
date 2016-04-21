@@ -45,6 +45,8 @@ public class SplashScreenActivity extends SalesforceDropboxActivity {
     public void onResume() {
         super.onResume();
 
+        PreferencesManager.initializeInstance(this);
+
         if (PreferencesManager.getInstance().isDropBoxTokenSet() || !Utils.isInternetAvailable(this)) {
 
             if (!PreferencesManager.getInstance().getFirstStart()) {

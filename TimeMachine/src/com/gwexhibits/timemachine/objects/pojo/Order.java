@@ -182,4 +182,14 @@ public class Order implements Serializable {
     public String getOrderTitle(){
         return getAccount().getName() + "@" + Html.fromHtml(getShowName());
     }
+
+    @Override
+    public boolean equals(Object object) {
+        boolean isEqual= false;
+        if (object != null && object instanceof Order) {
+            isEqual = (this.id.equals(((Order) object).id));
+        }
+
+        return isEqual;
+    }
 }

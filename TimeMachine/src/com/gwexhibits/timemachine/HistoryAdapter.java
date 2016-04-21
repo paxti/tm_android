@@ -63,7 +63,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
         holder.changeDate.setText(Utils.transformDateToHuman(historyCard.getTime().getStartTime()));
         holder.sfid.setText(historyCard.getOrder().getTitleForOptions());
         holder.changePhase.setText(historyCard.getTime().getPhase());
-        holder.textView2.setText(historyCard.getTime().getEntyIdInString());
+        holder.textView2.setText(historyCard.getTime().getSyncStatus());
     }
 
     @Override

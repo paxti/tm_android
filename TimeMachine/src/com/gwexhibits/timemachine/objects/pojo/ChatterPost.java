@@ -2,7 +2,9 @@ package com.gwexhibits.timemachine.objects.pojo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.gwexhibits.timemachine.utils.Utils;
 
 import java.io.Serializable;
@@ -18,12 +20,14 @@ public class ChatterPost implements Serializable {
     @JsonProperty("id")
     private String postId;
 
+    @JsonView(Views.Send.class)
     @JsonProperty("body")
     private ChatterBody chatterBody;
 
     @JsonProperty("actor")
     private ChatterActor actor;
 
+    @JsonView(Views.Send.class)
     @JsonProperty("feedElementType")
     private String elementType;
 
@@ -33,6 +37,7 @@ public class ChatterPost implements Serializable {
     @JsonProperty("capabilities")
     private ChatterEntryCapabilities capabilities;
 
+    @JsonView(Views.Send.class)
     @JsonIgnoreProperties("subjectId")
     private String subjectId;
 

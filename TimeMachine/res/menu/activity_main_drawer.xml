@@ -16,7 +16,7 @@
             android:title="@string/gallery_menu_item_title"/>
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="Chatter">
         <menu>
             <item
                 android:id="@+id/nav_chatter"
@@ -24,5 +24,6 @@
                 android:title="@string/chatter_menu_item_title"/>
         </menu>
     </item>
+
 
 </menu>

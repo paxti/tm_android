@@ -43,6 +43,10 @@ public class PreferencesManager {
         preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
+    public SharedPreferences getPreferences(){
+        return preferences;
+    }
+
     public void setCurrents(Order order, Time task) throws IOException {
         preferences.edit().putString(CURRENT_ORDER_KEY, Utils.toString(order)).commit();
         preferences.edit().putString(CURRENT_TASK_KEY, Utils.toString(task)).commit();

@@ -1,16 +1,11 @@
 package com.gwexhibits.timemachine.utils;
 
-import android.util.Log;
-
-import com.gwexhibits.timemachine.HistoryAdapter;
 import com.salesforce.androidsdk.rest.RestClient;
 import com.salesforce.androidsdk.rest.RestRequest;
 import com.salesforce.androidsdk.rest.RestResponse;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.protocol.HTTP;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -21,9 +16,12 @@ import java.io.UnsupportedEncodingException;
 public class ChatterManager {
 
     final private static String ORDER_FEED_URL = "/services/data/v36.0/chatter/feeds/record/%s/feed-elements";
-    final private static String MY_FEED = "/services/data/v36.0/chatter/feeds/to/me/feed-elements";
-    final private static String POST_URL = "/services/data/v36.0/chatter/feed-elements";
+    final private static String MY_FEED = "/services/data/v36.0/chatter/feeds/news/me/feed-elements";
+    final private static String FEED_TO ="/services/data/v36.0/chatter/feeds/to/%s/feed-elements";
+    final private static String FEED_ITEM_POST_URL = "/services/data/v36.0/chatter/feed-elements";
     final private static String COMMMENT_URL = "/services/data/v36.0/chatter/feed-elements/%s/capabilities/comments/items";
+    final private static String MENTIONS_URL = "/services/data/v36.0/chatter/mentions/completions?contextId=%s&q=%s";
+    final private static String MENTIONS_URL_NO_CONTEXT = "/services/data/v36.0/chatter/mentions/completions?q=%s";
 
     private static ChatterManager instance;
     private final RestClient restClient;
@@ -50,8 +48,8 @@ public class ChatterManager {
         sendChatterRequest(buildGetRequest(url), callback);
     }
 
-    public RestResponse getPostComments(String orderId) throws IOException {
-        return restClient.sendSync(buildGetRequest(String.format(COMMMENT_URL, orderId)));
+    public void getPostComments(String orderId, RestClient.AsyncRequestCallback callback) throws IOException {
+        restClient.sendAsync(buildGetRequest(String.format(COMMMENT_URL, orderId)), callback);
     }
 
     public RestResponse getFromUrl(String url) throws IOException {
@@ -62,12 +60,24 @@ public class ChatterManager {
         sendChatterRequest(buildGetRequest(url), callback);
     }
 
+    public RestResponse getMentions(String feedContext, String text) throws IOException {
+        if (feedContext != null) {
+            return sendChatterRequest(buildGetRequest(String.format(MENTIONS_URL, feedContext, text)));
+        } else {
+            return sendChatterRequest(buildGetRequest(String.format(MENTIONS_URL_NO_CONTEXT, text)));
+        }
+    }
+
     public RestResponse getFeed() throws IOException {
         return sendChatterRequest(buildGetRequest(MY_FEED));
     }
 
     public RestResponse getFeed(String orderId) throws IOException {
         return sendChatterRequest(buildGetRequest(String.format(ORDER_FEED_URL, orderId)));
+    }
+
+    public void getFeedTo(String orderId, RestClient.AsyncRequestCallback callback){
+        sendChatterRequest(buildGetRequest(String.format(FEED_TO, orderId)), callback);
     }
 
     public void getFeed(String orderId, RestClient.AsyncRequestCallback callback){
@@ -90,16 +100,22 @@ public class ChatterManager {
         return new RestRequest(RestRequest.RestMethod.GET, path, null);
     }
 
-    private RestRequest buildPostRequest(String path, JSONObject object) throws UnsupportedEncodingException {
-        StringEntity stringEntity = new StringEntity(object.toString(), HTTP.UTF_8);
+    private RestRequest buildPostRequest(String path, String object) throws UnsupportedEncodingException {
+        StringEntity stringEntity = new StringEntity(object, HTTP.UTF_8);
         stringEntity.setContentType("application/json");
         return new RestRequest(RestRequest.RestMethod.POST, path, stringEntity);
     }
 
-    public RestResponse postNewComment(JSONObject object, String orderId) throws IOException {
+    public void postNewComment(String object, String orderId, RestClient.AsyncRequestCallback callback) throws IOException {
+        restClient.sendAsync(buildPostRequest(String.format(COMMMENT_URL, orderId), object), callback);
+    }
 
-        return restClient.sendSync(buildPostRequest(String.format(COMMMENT_URL, orderId), object));
-//        restClient.sendAsync(buildPostRequest(String.format(COMMMENT_URL, orderId), object), callback);
+    public RestResponse postNewFeedItem(String object) throws IOException {
+        return  restClient.sendSync(buildPostRequest(FEED_ITEM_POST_URL, object));
+    }
+
+    public void postNewFeedItem(String object, RestClient.AsyncRequestCallback callback) throws IOException {
+        restClient.sendAsync(buildPostRequest(FEED_ITEM_POST_URL, object), callback);
     }
 
 }

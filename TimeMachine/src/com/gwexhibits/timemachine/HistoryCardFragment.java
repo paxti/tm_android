@@ -175,7 +175,7 @@ public class HistoryCardFragment extends Fragment {
             showTimePicker(TimePickerFragment.CHANGE_END_TIME,
                     TimePickerFragment.DIALOG_TYPE_TIME,
                     card,
-                    card.getTime().getEndTime());
+                    card.getTime().getEndTimeForPicker());
         }
 
         @Override
