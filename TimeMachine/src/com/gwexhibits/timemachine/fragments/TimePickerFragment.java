@@ -1,32 +1,21 @@
 package com.gwexhibits.timemachine.fragments;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.text.format.DateFormat;
-import android.view.View;
 import android.widget.DatePicker;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
-import com.gwexhibits.timemachine.OrderDetailsActivity;
 import com.gwexhibits.timemachine.R;
 import com.gwexhibits.timemachine.cards.HistoryCard;
-import com.gwexhibits.timemachine.objects.EndAfterStartException;
-import com.gwexhibits.timemachine.objects.pojo.Time;
-import com.gwexhibits.timemachine.objects.sf.OrderObject;
-import com.gwexhibits.timemachine.utils.MyTimePickerDialog;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Created by psyfu on 3/24/2016.
