@@ -22,6 +22,7 @@ public class ChatterManager {
     final private static String COMMMENT_URL = "/services/data/v36.0/chatter/feed-elements/%s/capabilities/comments/items";
     final private static String MENTIONS_URL = "/services/data/v36.0/chatter/mentions/completions?contextId=%s&q=%s";
     final private static String MENTIONS_URL_NO_CONTEXT = "/services/data/v36.0/chatter/mentions/completions?q=%s";
+    final private static String PROFILE_PAGE = "/services/data/v36.0/chatter/users/%s";
 
     private static ChatterManager instance;
     private final RestClient restClient;
@@ -116,6 +117,10 @@ public class ChatterManager {
 
     public void postNewFeedItem(String object, RestClient.AsyncRequestCallback callback) throws IOException {
         restClient.sendAsync(buildPostRequest(FEED_ITEM_POST_URL, object), callback);
+    }
+
+    public RestResponse getChatterProfile(String id) throws IOException {
+        return restClient.sendSync(buildGetRequest(String.format(PROFILE_PAGE, id)));
     }
 
 }

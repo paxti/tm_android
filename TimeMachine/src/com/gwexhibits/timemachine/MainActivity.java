@@ -15,16 +15,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.gwexhibits.timemachine.cards.HistoryCard;
 import com.gwexhibits.timemachine.fragments.TimePickerFragment;
 import com.gwexhibits.timemachine.objects.EndAfterStartException;
-import com.gwexhibits.timemachine.objects.pojo.ChatterPost;
+import com.gwexhibits.timemachine.objects.pojo.ChatterActor;
 import com.gwexhibits.timemachine.objects.pojo.Photo;
 import com.gwexhibits.timemachine.objects.pojo.Time;
+import com.gwexhibits.timemachine.utils.ChatterManager;
 import com.gwexhibits.timemachine.utils.DbManager;
 import com.gwexhibits.timemachine.utils.Utils;
 import com.salesforce.androidsdk.app.SalesforceSDKManager;
 import com.salesforce.androidsdk.rest.RestResponse;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import java.io.File;
@@ -100,6 +104,28 @@ public class MainActivity extends MenuActivity
 
         accountName.setText(SalesforceSDKManager.getInstance().getUserAccountManager().getCurrentUser().getDisplayName());
         accountEmail.setText(SalesforceSDKManager.getInstance().getUserAccountManager().getCurrentUser().getEmail());
+
+
+        try{
+            RestResponse response = ChatterManager.getInstance().getChatterProfile(
+                    SalesforceSDKManager.getInstance().getUserAccountManager().getCurrentUser().getUserId()
+            );
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.readerFor(ChatterActor.class);
+            ObjectReader jsonReader = mapper.readerFor(ChatterActor.class);
+            ChatterActor actor = (ChatterActor) jsonReader.readValue(response.asString());
+
+
+            Picasso.with(this)
+                    .load(actor.getPhoto().getPhotoUrl())
+                    .placeholder(android.R.drawable.sym_def_app_icon)
+                    .centerCrop()
+                    .fit()
+                    .into(accountImage);
+
+        } catch (Exception ex){
+            ex.printStackTrace();
+        }
 
         navigationView.getMenu().getItem(0).setChecked(true);
     }
