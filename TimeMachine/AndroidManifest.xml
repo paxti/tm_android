@@ -2,8 +2,8 @@
 <manifest package="com.gwexhibits.timemachine"
           xmlns:android="http://schemas.android.com/apk/res/android"
           android:installLocation="internalOnly"
-          android:versionCode="100052"
-          android:versionName="1.2.1">
+          android:versionCode="100053"
+          android:versionName="1.2.2">
 
     <uses-sdk
         android:minSdkVersion="19"
