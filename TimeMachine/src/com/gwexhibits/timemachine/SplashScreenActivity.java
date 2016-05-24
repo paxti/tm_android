@@ -55,7 +55,6 @@ public class SplashScreenActivity extends SalesforceDropboxActivity {
 
             if (PreferencesManager.getInstance().isCurrentTaskRunning()) {
                 Intent showOrderDetails = new Intent(this, OrderDetailsActivity.class);
-                showOrderDetails.setFlags(showOrderDetails.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
                 this.startActivity(showOrderDetails);
                 finish();
             }

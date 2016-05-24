@@ -208,7 +208,7 @@ public class OrderDetailsActivity extends MenuActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK){
             if (photoFile.exists()) {
-                uploadFile(photoFile, phase, order);
+                uploadFile(photoFile, order);
             } else {
                 Toast.makeText(this, getString(R.string.toast_total_failure), Toast.LENGTH_LONG).show();
             }
@@ -217,7 +217,7 @@ public class OrderDetailsActivity extends MenuActivity {
         }
     }
 
-    public void uploadFile(final File file, final String phase, final Order order){
+    public void uploadFile(final File file, final Order order){
 
         final Photo photo = savePhotoLocally(file.getName());
 
@@ -264,7 +264,7 @@ public class OrderDetailsActivity extends MenuActivity {
         try {
             photo = new Photo(photoFile.getAbsolutePath(),
                     fileName,
-                    phase,
+                    getPhase(),
                     order);
             DbManager.getInstance().savePhoto(photo);
             Toast.makeText(OrderDetailsActivity.this,

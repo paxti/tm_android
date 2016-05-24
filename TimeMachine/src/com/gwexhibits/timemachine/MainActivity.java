@@ -268,11 +268,9 @@ public class MainActivity extends MenuActivity
 
     @Override
     public void onChatterPostSentSuccess(RestResponse response) {
-
     }
 
     @Override
     public void onChatterPostSentError(Exception exception) {
-
     }
 }
