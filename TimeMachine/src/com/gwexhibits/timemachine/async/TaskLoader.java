@@ -1,7 +1,9 @@
 package com.gwexhibits.timemachine.async;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.gwexhibits.timemachine.objects.pojo.Time;
 import com.gwexhibits.timemachine.utils.DbManager;
 
@@ -14,6 +16,8 @@ import java.io.IOException;
  */
 public class TaskLoader extends AsyncTask<Long, Integer, Time> {
 
+    private static final String TAG = TaskLoader.class.getName();
+
     @Override
     protected Time doInBackground(Long... params) {
 
@@ -21,8 +25,11 @@ public class TaskLoader extends AsyncTask<Long, Integer, Time> {
             return DbManager.getInstance().getTimeObject(params[0]);
         } catch (JSONException e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            Crashlytics.log(Log.DEBUG, TAG, e.getMessage());
+        } catch (IOException io) {
+            io.printStackTrace();
+            Crashlytics.log(Log.DEBUG, TAG, "Params: " +
+                    String.valueOf(params[0])+ " " + io.getMessage());
         }
 
         return null;

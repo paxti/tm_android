@@ -69,6 +69,7 @@
     <string name="toast_bad_dropbox_link">Can\'t find correct dropbox link !</string>
     <string name="toast_cant_upload">Can\'t upload to DropBox !</string>
     <string name="toast_cant_delete">Can\'t delete local photo !</string>
+    <string name="toast_cant_save">Can\'t save photo locally !</string>
     <string name="toast_unsupported_code">Unexpected resultCode: </string>
     <string name="toast_error">Unexpected error</string>
     <string name="toast_cant_start">Error, task is not started</string>
@@ -92,13 +93,15 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_history">HistoryActivity</string>
     <string name="title_activity_order_select">OrderSelectActivity</string>
-
+    <string name="cant_start_chatter">Can\'t start chatter !</string>
 
     <!--Menu-->
     <string name="menu_sync_all">Sync all</string>
     <string name="menu_sync_orders">Sync orders</string>
     <string name="menu_sync_tasks">Sync tasks</string>
     <string name="menu_sync_photos">Sync photos</string>
+    <string name="menu_delete_all_photos">Delete all photos</string>
+    <string name="menu_delete_all_broken">Delete all broken</string>
 
     <string name="gallery_menu_item_title">Gallery</string>
     <string name="history_menu_item_title">History</string>

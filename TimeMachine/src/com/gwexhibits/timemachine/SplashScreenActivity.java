@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.content.LocalBroadcastManager;
 
+import com.crashlytics.android.Crashlytics;
 import com.dropbox.core.android.Auth;
 import com.gwexhibits.timemachine.objects.sf.OrderObject;
 import com.gwexhibits.timemachine.objects.sf.PhotoObject;
@@ -20,6 +21,7 @@ import com.salesforce.androidsdk.accounts.UserAccount;
 import com.salesforce.androidsdk.rest.RestClient;
 import com.salesforce.androidsdk.smartstore.store.SmartStore;
 import com.salesforce.androidsdk.smartsync.app.SmartSyncSDKManager;
+import io.fabric.sdk.android.Fabric;
 
 public class SplashScreenActivity extends SalesforceDropboxActivity {
 
@@ -30,6 +32,7 @@ public class SplashScreenActivity extends SalesforceDropboxActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -66,6 +69,7 @@ public class SplashScreenActivity extends SalesforceDropboxActivity {
         this.client = client;
 
         ChatterManager.initializeInstance(client);
+        logUser(client);
 
         if(PreferencesManager.getInstance().getFirstStart()) {
             account = SmartSyncSDKManager.getInstance().getUserAccountManager().getCurrentUser();
@@ -96,4 +100,11 @@ public class SplashScreenActivity extends SalesforceDropboxActivity {
         startActivity(startMainActivity);
         finish();
     }
+
+    private void logUser(RestClient client) {
+        Crashlytics.setUserIdentifier(client.getClientInfo().clientId);
+        Crashlytics.setUserEmail(client.getClientInfo().email);
+        Crashlytics.setUserName(client.getClientInfo().displayName);
+    }
+
 }

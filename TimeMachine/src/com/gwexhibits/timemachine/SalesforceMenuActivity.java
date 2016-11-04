@@ -1,27 +1,23 @@
 package com.gwexhibits.timemachine;
 
 import android.content.Intent;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
 import com.gwexhibits.timemachine.services.DropboxService;
 import com.gwexhibits.timemachine.services.OrdersSyncService;
 import com.gwexhibits.timemachine.services.TimesSyncService;
+import com.gwexhibits.timemachine.utils.ChatterManager;
 import com.gwexhibits.timemachine.utils.Utils;
+import com.salesforce.androidsdk.rest.RestClient;
 
 /**
- * Created by psyfu on 4/6/2016.
+ * Created by psyfu on 9/22/2016.
  */
-public class MenuActivity extends DropboxActivity {
+public class SalesforceMenuActivity extends SalesforceDropboxActivity {
 
-    private static final String TAG = MenuActivity.class.getName();
+    private RestClient client;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -46,7 +42,6 @@ public class MenuActivity extends DropboxActivity {
                 startService(timeSyncSerice);
             } else {
                 Toast.makeText(this, getString(R.string.toast_you_need_internet), Toast.LENGTH_LONG).show();
-                Crashlytics.log(Log.DEBUG, TAG, "Sync all without internet connection");
             }
 
             return true;
@@ -58,7 +53,6 @@ public class MenuActivity extends DropboxActivity {
                 startService(mServiceIntent);
             } else {
                 Toast.makeText(this, getString(R.string.toast_you_need_internet), Toast.LENGTH_LONG).show();
-                Crashlytics.log(Log.DEBUG, TAG, "Sync orders without internet connection");
             }
 
             return true;
@@ -70,7 +64,6 @@ public class MenuActivity extends DropboxActivity {
                 startService(timeSyncSerice);
             } else {
                 Toast.makeText(this, getString(R.string.toast_you_need_internet), Toast.LENGTH_LONG).show();
-                Crashlytics.log(Log.DEBUG, TAG, "Sync tasks without internet connection");
             }
 
             return true;
@@ -82,7 +75,6 @@ public class MenuActivity extends DropboxActivity {
                 startService(dropBoxService);
             } else {
                 Toast.makeText(this, getString(R.string.toast_you_need_internet), Toast.LENGTH_LONG).show();
-                Crashlytics.log(Log.DEBUG, TAG, "Sync photos without internet connection");
             }
 
             return true;
@@ -94,6 +86,12 @@ public class MenuActivity extends DropboxActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onResume(RestClient client) {
+        this.client = client;
+        if (ChatterManager.getInstance() == null) ChatterManager.initializeInstance(client);
     }
 
 }

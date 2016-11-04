@@ -43,13 +43,13 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
             .fit()
             .into(holder.image);
 
-        holder.image.setOnLongClickListener(new View.OnLongClickListener() {
+/*        holder.image.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 listener.onLongClick(images.get(position));
                 return true;
             }
-        });
+        });*/
     }
 
     @Override

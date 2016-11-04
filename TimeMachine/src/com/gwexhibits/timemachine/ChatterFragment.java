@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -148,12 +149,22 @@ public class ChatterFragment extends Fragment implements ChatterShowList, SwipeR
             ChatterManager.getInstance().getFeedTo(getArguments().getString(CHATTER_URL),
                     onChatterDataReceived);
         }
+
     }
 
     @Override
     public void refreshList() {
-        showProgress();
-        refreshData();
+        try{
+            if (ChatterManager.getInstance() != null) {
+                showProgress();
+                refreshData();
+            }
+        } catch(IllegalStateException ill) {
+            Toast.makeText(getContext(),
+                    getString(R.string.cant_start_chatter),
+                    Toast.LENGTH_SHORT)
+                    .show();
+        }
     }
 
     private void showProgress(){

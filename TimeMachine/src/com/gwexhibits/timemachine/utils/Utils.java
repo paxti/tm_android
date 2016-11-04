@@ -93,8 +93,8 @@ public class Utils {
                 context.getPackageName() + PHOTOS_PATH;
     }
 
-    public static String buildPhotosName(){
-        return System.currentTimeMillis() + ".jpg";
+    public static String buildPhotosName(String orderType, String sfid){
+        return String.format("%s-%s-%s.jpg", sfid, orderType, System.currentTimeMillis());
     }
 
     public static String transformTimeToHuman(Date date){

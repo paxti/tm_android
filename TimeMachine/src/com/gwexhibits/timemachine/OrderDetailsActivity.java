@@ -1,35 +1,27 @@
 package com.gwexhibits.timemachine;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.Menu;
 
+import android.util.Log;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.dropbox.core.v2.files.FileMetadata;
+import com.dropbox.core.v2.files.Metadata;
+import com.gwexhibits.timemachine.async.CheckUploadTask;
 import com.gwexhibits.timemachine.async.UploadFileTask;
-import com.gwexhibits.timemachine.objects.pojo.ChatterPost;
 import com.gwexhibits.timemachine.objects.pojo.Order;
 import com.gwexhibits.timemachine.objects.pojo.Photo;
 import com.gwexhibits.timemachine.objects.pojo.Time;
@@ -37,15 +29,11 @@ import com.gwexhibits.timemachine.utils.DbManager;
 import com.gwexhibits.timemachine.utils.DropboxClientFactory;
 import com.gwexhibits.timemachine.utils.PreferencesManager;
 import com.gwexhibits.timemachine.utils.Utils;
-import com.salesforce.androidsdk.rest.RestResponse;
 
-
-import org.apache.commons.codec.DecoderException;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,6 +43,7 @@ import butterknife.OnClick;
 
 public class OrderDetailsActivity extends MenuActivity {
 
+    private static final String TAG = OrderDetailsActivity.class.getName();
     private static final int REQUEST_TAKE_PHOTO = 1;
     private static final String PATH_TO_PHOTO = "path_to_photo";
 
@@ -123,6 +112,7 @@ public class OrderDetailsActivity extends MenuActivity {
             } catch (Exception e) {
                 Toast.makeText(this, getString(R.string.error_message), Toast.LENGTH_LONG).show();
                 e.printStackTrace();
+                Crashlytics.log(Log.DEBUG, TAG, e.getMessage());
             }
         } else {
             setPhase(getIntent().getStringExtra(PHASE_KEY));
@@ -193,14 +183,37 @@ public class OrderDetailsActivity extends MenuActivity {
     public void takePicture(View view) {
         if (Utils.isCameraPermissionGranted(this) && Utils.isStoragePermissionGranted(this)) {
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            photoFile = new File(Utils.getPhotosPath(this), Utils.buildPhotosName());
-            Uri uri = Uri.fromFile(photoFile);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri );
-            intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
-            startActivityForResult(intent, REQUEST_TAKE_PHOTO);
+
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                try {
+                    photoFile = createImageFile();
+                } catch (IOException ex) {
+                    Toast.makeText(this, getString(R.string.toast_cant_save), Toast.LENGTH_LONG).show();
+                    Crashlytics.log(Log.DEBUG, TAG, ex.getMessage());
+                }
+                if (photoFile != null) {
+                    Uri uri = Uri.fromFile(photoFile);
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, uri );
+                    intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
+                    startActivityForResult(intent, REQUEST_TAKE_PHOTO);
+                }
+            }
         } else {
             Utils.requestPermissions(this);
         }
+    }
+
+    private File createImageFile() throws IOException{
+
+        File pictureFolder = new File(Utils.getPhotosPath(this));
+        if (!pictureFolder.isDirectory()){
+            pictureFolder.mkdirs();
+        }
+        File photo = new File(pictureFolder, Utils.buildPhotosName(
+                this.getOrder().getOrderType(),
+                this.getOrder().getSfid()));
+        photo.createNewFile();
+        return photo;
     }
 
     @Override
@@ -211,9 +224,12 @@ public class OrderDetailsActivity extends MenuActivity {
                 uploadFile(photoFile, order);
             } else {
                 Toast.makeText(this, getString(R.string.toast_total_failure), Toast.LENGTH_LONG).show();
+                Crashlytics.log(Log.DEBUG, TAG, "Photo file doesn't exists");
             }
         } else {
             Toast.makeText(this, getString(R.string.toast_error), Toast.LENGTH_LONG).show();
+            Crashlytics.log(Log.DEBUG, TAG, "Camera result is not ok: request code" +
+                    String.valueOf(requestCode) + ", resultCode: " + String.valueOf(resultCode));
         }
     }
 
@@ -222,6 +238,9 @@ public class OrderDetailsActivity extends MenuActivity {
         final Photo photo = savePhotoLocally(file.getName());
 
         try {
+
+            Crashlytics.log(Log.DEBUG, TAG, "Uploading: " + photo.getLocalPath() + " to: " + photo.getDropboxPath());
+
             Toast.makeText(OrderDetailsActivity.this,
                     getString(R.string.toast_uploading),
                     Toast.LENGTH_SHORT)
@@ -230,25 +249,45 @@ public class OrderDetailsActivity extends MenuActivity {
             new UploadFileTask(this, DropboxClientFactory.getClient(), new UploadFileTask.Callback() {
                 @Override
                 public void onUploadComplete(FileMetadata result) {
-                    Toast.makeText(OrderDetailsActivity.this,
-                            getString(R.string.toast_uploaded),
-                            Toast.LENGTH_SHORT).show();
 
-                    if (file.delete()) {
-                        DbManager.getInstance().deletePhoto(photo);
-                    } else {
-                        Toast.makeText(OrderDetailsActivity.this,
-                                getString(R.string.toast_cant_delete),
-                                Toast.LENGTH_SHORT).show();
-                    }
+                    new CheckUploadTask(OrderDetailsActivity.this,
+                            DropboxClientFactory.getClient(),
+                            new CheckUploadTask.Callback() {
+
+                        @Override
+                        public void onUploadComplete(Metadata checkResult) {
+                            if (checkResult.getName().length() > 0) {
+                                Toast.makeText(OrderDetailsActivity.this,
+                                        getString(R.string.toast_uploaded),
+                                        Toast.LENGTH_SHORT).show();
+
+                                if (file.delete()) {
+                                    DbManager.getInstance().deletePhoto(photo);
+                                } else {
+                                    Toast.makeText(OrderDetailsActivity.this,
+                                            getString(R.string.toast_cant_delete),
+                                            Toast.LENGTH_SHORT).show();
+                                    Crashlytics.log(Log.DEBUG, TAG, "Photo can't be deleted");
+                                }
+                            } else {
+                                Crashlytics.log(Log.DEBUG, TAG, "Photo is uploaded but check failed");
+                            }
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+                            e.printStackTrace();
+                            showCantUploadToDropBox();
+                            Crashlytics.log(Log.DEBUG, TAG, "Photo check request failed: " + e.getMessage());
+                        }
+                    }).execute(photo.getDropboxPath());
                 }
 
                 @Override
                 public void onError(Exception e) {
                     e.printStackTrace();
                     showCantUploadToDropBox();
-                    savePhotoLocally(file.getName());
-
+                    Crashlytics.log(Log.DEBUG, TAG, "Photo file can't be uploaded: " + e.getMessage());
                 }
             }).execute(file.getAbsolutePath(), photo.getDropboxPath());
 
@@ -276,11 +315,13 @@ public class OrderDetailsActivity extends MenuActivity {
             Toast.makeText(this,
                     getString(R.string.toast_bad_dropbox_link),
                     Toast.LENGTH_LONG).show();
+            Crashlytics.log(Log.DEBUG, TAG, ue.getMessage());
         } catch (Exception ex) {
             ex.printStackTrace();
             Toast.makeText(OrderDetailsActivity.this,
                     getString(R.string.toast_total_failure),
                     Toast.LENGTH_LONG).show();
+            Crashlytics.log(Log.DEBUG, TAG, ex.getMessage());
         }
 
         return photo;

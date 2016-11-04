@@ -237,4 +237,8 @@ public class DbManager {
     public void deletePhoto(Photo photo){
         smartStore.delete(PhotoObject.PHOTOS_SUPE, photo.getEntyId());
     }
+
+    public void deleteAllPhotos() {
+        smartStore.dropSoup(PhotoObject.PHOTOS_SUPE);
+    }
 }

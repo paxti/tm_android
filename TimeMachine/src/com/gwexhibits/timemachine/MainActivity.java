@@ -251,9 +251,9 @@ public class MainActivity extends MenuActivity
 
     @Override
     public void onListFragmentInteraction(Photo photo) {
-        DbManager.getInstance().deletePhoto(photo);
+        /*DbManager.getInstance().deletePhoto(photo);
         File photoFile = new File(photo.getLocalPath());
-        photoFile.delete();
+        photoFile.delete();*/
         GalleryFragment galleryFragment = (GalleryFragment) getSupportFragmentManager().findFragmentByTag(GALLERY_FRAGMENT);
         galleryFragment.refreshView();
     }

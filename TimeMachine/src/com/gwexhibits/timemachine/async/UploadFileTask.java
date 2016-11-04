@@ -1,11 +1,11 @@
 package com.gwexhibits.timemachine.async;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.dropbox.core.DbxException;
-import com.dropbox.core.v1.DbxEntry;
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.FileMetadata;
 import com.dropbox.core.v2.files.WriteMode;
@@ -19,6 +19,8 @@ import java.io.InputStream;
  * Created by psyfu on 3/22/2016.
  */
 public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
+
+    private static final String TAG = UploadFileTask.class.getName();
     private final Context mContext;
     private final DbxClientV2 mDbxClient;
     private final Callback mCallback;
@@ -42,6 +44,8 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
             mCallback.onError(mException);
         } else if (result == null) {
             mCallback.onError(null);
+        } else if (result.getId().isEmpty()){
+            mCallback.onError(new DbxException("Id is empty"));
         } else {
             mCallback.onUploadComplete(result);
         }
@@ -61,6 +65,7 @@ public class UploadFileTask extends AsyncTask<String, Void, FileMetadata> {
                         .uploadAndFinish(inputStream);
             } catch (DbxException | IOException e) {
                 mException = e;
+                Crashlytics.log(Log.DEBUG, TAG, e.getMessage());
             }
         }
 
